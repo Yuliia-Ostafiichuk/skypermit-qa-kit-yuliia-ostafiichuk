@@ -1,0 +1,45 @@
+{
+  "run_id": "20261025-1658",
+  "args": { "max": 3, "gate": "TIME_WINDOW" },
+  "gaps_before": 6,
+  "processed": 3,
+  "results": [
+    {
+      "gate": "TIME_WINDOW",
+      "condition": "Lead time too short",
+      "rule_reference": "TSD-4 §2.1",
+      "test_case": "TC-TW-001",
+      "file": "test-cases/time-window/TC-TW-001.md",
+      "verdict": "CORRESPONDS TO SPECS",
+      "outcome": "kept",
+      "reason": null,
+      "code_discrepancies": null
+    },
+    {
+      "gate": "TIME_WINDOW",
+      "condition": "Booked too far in advance",
+      "rule_reference": "TSD-4 §2.2",
+      "test_case": "TC-TW-002",
+      "file": "test-cases/time-window/TC-TW-002.md",
+      "verdict": "CORRESPONDS TO SPECS",
+      "outcome": "kept",
+      "reason": null,
+      "code_discrepancies": null
+    },
+    {
+      "gate": "TIME_WINDOW",
+      "condition": "Duration out of range",
+      "rule_reference": "TSD-4 §3",
+      "test_case": "TC-TW-003",
+      "file": "test-cases/time-window/TC-TW-003.md",
+      "verdict": "CORRESPONDS TO SPECS",
+      "outcome": "kept",
+      "reason": null,
+      "code_discrepancies": null
+    }
+  ],
+  "totals": { "kept": 3, "deleted": 0, "open_question": 0, "skipped": 0 },
+  "open_questions_file": null,
+  "gaps_after": 3,
+  "warnings": []
+}

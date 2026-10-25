@@ -27,8 +27,12 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 │   ├── agents/
 │   │   └── tc-verifier.md  # Read-only subagent: verifies a test case against docs + code
 │   └── skills/         # Claude Code skills for the QA workflows above
+│       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: test cases for uncovered business rules, verified by tc-verifier
 │       ├── test-case-creator/  # /test-case-creator <doc | doc §section | scenario>: atomic manual test cases
 │       └── test-plan/  # /test-plan <file-or-dir>: one-page test plan
+├── open-questions/     # Doc gaps found by /cover-gaps (NOTHING FOUND IN DOCUMENTATION) + per-run JSON summaries
+├── scripts/
+│   └── uncovered-rules.mjs  # Read-only: 06 §6 rules (per 07) with no test case, grouped by gate, as JSON
 ├── test-cases/         # Generated test cases
 ├── test-plans/         # Generated test plans (/test-plan)
 ├── CLAUDE.md

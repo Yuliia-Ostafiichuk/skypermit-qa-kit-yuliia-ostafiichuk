@@ -107,7 +107,7 @@ Write at the lowest level a tester can execute without interpretation:
 - Response `422` with `failing_gate: "TIME_WINDOW"` and `rule_reference: "A-7 §1"`; FR1 `state` = `REJECTED`.
 ```
 
-For a UI-level test case, read `examples/TC-UI-001.md`. It uses `data-testid` values only where `04` defines them, and describes everything else in plain words.
+For a UI-level test case, read `examples/TC-UI-001.md`. It uses `data-testid` values only where `04` defines them, and describes everything else in plain words. Its form data is shown as `<placeholder>`s with a description of what each value must be. That shows the structure only. A real test case still uses concrete values.
 
 ## 6. Summarize
 

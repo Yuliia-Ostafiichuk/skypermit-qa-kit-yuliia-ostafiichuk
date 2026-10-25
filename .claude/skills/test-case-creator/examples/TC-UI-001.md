@@ -5,19 +5,19 @@
 
 ## Preconditions
 1. Browser has no operator session (logged out); the header shows `operator-register-link`.
-2. No operator or Supabase Auth user exists with email `op.ui001@example.com` or `national_id` `UA-UI-0001`.
+2. No operator or Supabase Auth user exists with `<email>` or `<national ID>` used in step 2.
 
 ## Steps
 1. In the header, click `operator-register-link`.
 2. On the `/register` page, fill in the single registration form:
-   - email: `op.ui001@example.com`
-   - password: `Str0ng-Passw0rd!`
-   - legal name: `UI001 Aerial Services LLC`
-   - national ID: `UA-UI-0001`
-   - phone: `+380441234567`
-   - address line: `1 Test Street`
-   - city: `Kyiv`
-   - postal code: `01001`
+   - email: `<email>`: valid format, not registered yet
+   - password: `<password>`: valid password
+   - legal name: `<legal name>`: any non-empty company name
+   - national ID: `<national ID>`: not used by any existing operator
+   - phone: `<phone>`: valid phone number
+   - address line: `<address line>`: any non-empty street address
+   - city: `<city>`: any non-empty city name
+   - postal code: `<postal code>`: valid postal code
 3. Submit the form.
 
 ## Expected result

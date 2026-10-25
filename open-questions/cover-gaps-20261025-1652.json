@@ -1,0 +1,23 @@
+{
+  "run_id": "20261025-1652",
+  "args": { "max": 1, "gate": "PILOT" },
+  "gaps_before": 2,
+  "processed": 1,
+  "results": [
+    {
+      "gate": "PILOT",
+      "condition": "Rating doesn't cover zone class",
+      "rule_reference": "OH-1 §2.1",
+      "test_case": "TC-PLT-001",
+      "file": "test-cases/pilot-gate/TC-PLT-001.md",
+      "verdict": "CORRESPONDS TO SPECS",
+      "outcome": "kept",
+      "reason": null,
+      "code_discrepancies": null
+    }
+  ],
+  "totals": { "kept": 1, "deleted": 0, "open_question": 0, "skipped": 0 },
+  "open_questions_file": null,
+  "gaps_after": 1,
+  "warnings": []
+}
