@@ -2,11 +2,7 @@
   "permissions": {
     "deny": [
       "Edit(../skypermit/**)",
-      "Write(../skypermit/**)",
       "Edit(//Users/yuliiaostafiichuk/genai-course-yos/skypermit/**)",
-      "Write(//Users/yuliiaostafiichuk/genai-course-yos/skypermit/**)",
-      "NotebookEdit(../skypermit/**)",
-      "NotebookEdit(//Users/yuliiaostafiichuk/genai-course-yos/skypermit/**)",
       "Bash(rm *skypermit/*)",
       "Bash(rmdir *skypermit/*)",
       "Bash(mv *skypermit/*)",
@@ -15,6 +11,18 @@
       "Bash(mkdir *skypermit/*)",
       "WebFetch",
       "WebSearch"
+    ]
+  },
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/usage-report.mjs\""
+          }
+        ]
+      }
     ]
   }
 }
