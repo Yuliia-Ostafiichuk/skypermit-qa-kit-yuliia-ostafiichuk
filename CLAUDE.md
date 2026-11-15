@@ -52,10 +52,10 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 │   │   └── tc-verifier.md  # Read-only subagent: verifies a test case against docs + code
 │   └── skills/         # Claude Code skills for the QA workflows above
 │       ├── audit-permissions/  # /audit-permissions: read-only audit of permission rules in all settings files
-│       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: test cases for uncovered business rules, verified by tc-verifier
+│       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: API test cases for uncovered business rules via api-test-case-creator (not created yet), verified by tc-verifier
 │       ├── jira-intake/  # /jira-intake <JIRA-KEY>: read-only, one Jira issue → JSON (key, title, check_type, AC, confluence_url, notes)
 │       ├── story-doc-check/  # /story-doc-check <jira-intake JSON | file | empty>: read-only check of a story's acceptance criteria against Confluence
-│       ├── test-case-creator/  # /test-case-creator <doc | doc §section | scenario>: atomic manual test cases
+│       ├── ui-test-case-creator/  # /ui-test-case-creator <doc | doc §section | scenario>: atomic manual UI/E2E test cases (EP, BV, state transition)
 │       └── test-plan/  # /test-plan <file-or-dir>: one-page test plan
 ├── open-questions/     # Doc gaps found by /cover-gaps (NOTHING FOUND IN DOCUMENTATION) + per-run JSON summaries
 ├── scripts/

@@ -1,6 +1,6 @@
 ---
 name: cover-gaps
-description: Close SkyPermit business-rule coverage gaps. Lists the rules from 06-business-rules.md §6 (corrected per 07-clarifications.md) that no test case covers yet, generates one negative test case per rule with test-case-creator, verifies each with the tc-verifier subagent, keeps only verified cases, and returns a JSON summary.
+description: Close SkyPermit business-rule coverage gaps. Lists the rules from 06-business-rules.md §6 (corrected per 07-clarifications.md) that no test case covers yet, generates one negative test case per rule with api-test-case-creator, verifies each with the tc-verifier subagent, keeps only verified cases, and returns a JSON summary.
 argument-hint: [--max N] [--gate PILOT|AIRCRAFT|ZONE|TIME_WINDOW|REGISTRATION]
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Write, Skill, Agent, Bash(node scripts/uncovered-rules.mjs*), Bash(rm test-cases/*), Bash(mkdir -p open-questions)
@@ -38,18 +38,20 @@ Note the time now as `<run-id>` in the form `YYYYMMDD-HHMM`. It names this run's
 
 ## 3. Generate one test case per rule
 
-Process the rules **one at a time**, in the order the script returned them. Don't run them in parallel: test-case-creator picks the next free ID in an area, and parallel runs would collide.
+Business rules from 06 §6 are checked through the API (`422`, `failing_gate`, `rule_reference`), so the cases come from the API test-case skill, `api-test-case-creator`. Don't fall back to `ui-test-case-creator`: it writes UI-only cases, which won't contain the `failing_gate`/`rule_reference` pair the script counts as coverage. If `.claude/skills/api-test-case-creator/SKILL.md` doesn't exist yet, say so and stop before generating anything. Still return the step 6 JSON, with every selected rule as `outcome: "skipped"` and reason "api-test-case-creator not available".
+
+Process the rules **one at a time**, in the order the script returned them. Don't run them in parallel: api-test-case-creator picks the next free ID in an area, and parallel runs would collide.
 
 For each rule:
 1. List `test-cases/**/*.md` (Glob) before the call.
-2. Invoke the `test-case-creator` skill with a **scenario** argument. A scenario makes it write exactly one test case. Build it from the script's fields:
+2. Invoke the `api-test-case-creator` skill with a **scenario** argument. A scenario makes it write exactly one test case. Build it from the script's fields:
 
    > One negative test case for the `<gate>` rule "<condition>" from `<doc_section>` (rule table 06 §6): the request fails only this condition, all other gates pass, and the expected result is `422` with `failing_gate: "<gate>"` and `rule_reference: "<rule_reference>"`.
 
    - For `REGISTRATION`, describe the `POST /api/v1/aircraft` write instead: `422` with `rule_reference: "OH-1 §3"` and **no** `failing_gate`.
    - If `citation_unconfirmed` is `true`, add: "Mark the citation `(citation unconfirmed — 05 §2)`."
 3. List `test-cases/**/*.md` again. The new file is the difference.
-   - No new file: test-case-creator skipped the rule. Record `outcome: "skipped"` with its stated reason and go on to the next rule.
+   - No new file: api-test-case-creator skipped the rule. Record `outcome: "skipped"` with its stated reason and go on to the next rule.
    - A file appeared but doesn't contain the expected `failing_gate`/`rule_reference` pair: it doesn't close the gap. Delete it and record `outcome: "deleted"` with reason "generated case doesn't target the rule".
    - More than one new file: keep all of them for verification, and say so in the summary.
 

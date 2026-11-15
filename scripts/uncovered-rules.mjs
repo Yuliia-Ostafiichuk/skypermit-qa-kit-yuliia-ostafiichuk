@@ -24,7 +24,7 @@ const TEST_CASES = join(ROOT, "test-cases");
 const GATE_ORDER = ["PILOT", "AIRCRAFT", "ZONE", "TIME_WINDOW", "REGISTRATION"];
 
 // Section of 06 that defines each gate's pass/fail logic, handed to
-// test-case-creator as the test basis.
+// api-test-case-creator as the test basis.
 const GATE_SECTION = {
   PILOT: "06-business-rules.md §1.1",
   AIRCRAFT: "06-business-rules.md §1.2",
