@@ -52,6 +52,7 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 │   └── skills/         # Claude Code skills for the QA workflows above
 │       ├── audit-permissions/  # /audit-permissions: read-only audit of permission rules in all settings files
 │       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: test cases for uncovered business rules, verified by tc-verifier
+│       ├── story-doc-check/  # /story-doc-check <JIRA-KEY>: read-only check of a story's acceptance criteria against Confluence
 │       ├── test-case-creator/  # /test-case-creator <doc | doc §section | scenario>: atomic manual test cases
 │       └── test-plan/  # /test-plan <file-or-dir>: one-page test plan
 ├── open-questions/     # Doc gaps found by /cover-gaps (NOTHING FOUND IN DOCUMENTATION) + per-run JSON summaries
