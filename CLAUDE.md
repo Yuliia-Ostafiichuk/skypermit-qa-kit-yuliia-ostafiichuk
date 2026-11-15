@@ -54,6 +54,7 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 │       ├── audit-permissions/  # /audit-permissions: read-only audit of permission rules in all settings files
 │       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: API test cases for uncovered business rules via api-test-case-creator (not created yet), verified by tc-verifier
 │       ├── jira-intake/  # /jira-intake <JIRA-KEY>: read-only, one Jira issue → JSON (key, title, check_type, AC, confluence_url, notes)
+│       ├── testomat-sync/  # /testomat-sync upsert|run|report: the only place that writes to Testomat.io (shared by UI and API orchestrators)
 │       ├── story-doc-check/  # /story-doc-check <jira-intake JSON | file | empty>: read-only check of a story's acceptance criteria against Confluence
 │       ├── ui-test-case-creator/  # /ui-test-case-creator <doc | doc §section | scenario>: atomic manual UI/E2E test cases (EP, BV, state transition)
 │       └── test-plan/  # /test-plan <file-or-dir>: one-page test plan
