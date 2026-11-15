@@ -1,7 +1,7 @@
 # TC-UI-005: Check before submitting passes TIME_WINDOW for a 05:15–05:45 window in KBP-CTR-3 (inside ZC-2026.1 general curfew, outside A-7)
 
 **ID:** TC-UI-005
-**Doc ref:** 06 — Business Rules §1.4 (TSD-4 §4; A-7 §1), §4 (`KBP-CTR-3`), §6; 04 — Frontend Spec §Operator portal
+**Doc ref:** 06 — Business Rules §1.4 (TSD-4 §4; A-7 §1), §4 (`KBP-CTR-3`), §6; 04 — Frontend Spec §Operator portal; SKY-1 AC1 (outside the A-7 curfew → pass), AC5 (same partition: inside ZC-2026.1 22:00–06:00, outside A-7 23:00–05:00)
 
 ## Preconditions
 1. Browser and OS time zone are set to Europe/Kyiv (the window inputs are `datetime-local` and are read in the browser's local time, so the entered time equals zone-local time of `KBP-CTR-3`).

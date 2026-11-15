@@ -1,7 +1,7 @@
 # TC-UI-013: With an R_BASIC pilot and a curfew window in KBP-CTR-3, the check reports PILOT (OH-1 §2.1), not the curfew
 
 **ID:** TC-UI-013
-**Doc ref:** 06 — Business Rules §Evaluation order (API-REF §5), §1.1 (OH-1 §2.1), §1.4 (A-7 §1); 04 — Frontend Spec §Operator portal
+**Doc ref:** 06 — Business Rules §Evaluation order (API-REF §5), §1.1 (OH-1 §2.1), §1.4 (A-7 §1); 04 — Frontend Spec §Operator portal; SKY-1 AC3 (negative: when PILOT fails, evaluation stops before TIME_WINDOW and A-7 §1 is not reported)
 
 ## Preconditions
 1. Browser and OS time zone are set to Europe/Kyiv (the window inputs are `datetime-local` and are read in the browser's local time, so the entered time equals zone-local time of `KBP-CTR-3`).

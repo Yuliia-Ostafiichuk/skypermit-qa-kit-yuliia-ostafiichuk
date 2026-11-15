@@ -1,7 +1,7 @@
 # TC-UI-011: Submitting a curfew-violating KBP-CTR-3 request moves it to REJECTED with rule reference A-7 §1
 
 **ID:** TC-UI-011
-**Doc ref:** 06 — Business Rules §1.4 (TSD-4 §4; A-7 §1), §4 (`KBP-CTR-3`), §6; 02 — State Machine (DRAFT → submit → SUBMITTED → gates fail → REJECTED); 04 — Frontend Spec §Operator portal (request detail view); 03 — API Contract §Flight requests (endpoint 10 `submit`), §The `422` body
+**Doc ref:** 06 — Business Rules §1.4 (TSD-4 §4; A-7 §1), §4 (`KBP-CTR-3`), §6; 02 — State Machine (DRAFT → submit → SUBMITTED → gates fail → REJECTED); 04 — Frontend Spec §Operator portal (request detail view); 03 — API Contract §Flight requests (endpoint 10 `submit`), §The `422` body; SKY-1 AC1–AC2 (rejection reason cites A-7 §1 after submit)
 
 ## Preconditions
 1. Browser and OS time zone are set to Europe/Kyiv (the window inputs are `datetime-local` and are read in the browser's local time, so the entered time equals zone-local time of `KBP-CTR-3`).
