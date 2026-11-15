@@ -48,6 +48,7 @@ All QA folders live at the root of this repo (`skypermit-qa-kit-yuliia-ostafiich
 skypermit-qa-kit-yuliia-ostafiichuk/
 ├── .claude/
 │   ├── agents/
+│   │   ├── implementation-check.md  # Read-only subagent: jira-intake JSON → per-AC implemented/partial/not_found with file:line
 │   │   └── tc-verifier.md  # Read-only subagent: verifies a test case against docs + code
 │   └── skills/         # Claude Code skills for the QA workflows above
 │       ├── audit-permissions/  # /audit-permissions: read-only audit of permission rules in all settings files
