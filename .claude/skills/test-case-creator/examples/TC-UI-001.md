@@ -1,7 +1,7 @@
 # TC-UI-001: New operator registers via the /register form and is logged in immediately
 
 **ID:** TC-UI-001
-**Doc ref:** 04-frontend-spec.md §Operator portal (Login and register pages), §Two contracts to hold exactly (selector stability)
+**Doc ref:** 04 — Frontend Spec §Operator portal (Login and register pages), §Two contracts to hold exactly (selector stability)
 
 ## Preconditions
 1. Browser has no operator session (logged out); the header shows `operator-register-link`.

@@ -13,7 +13,30 @@ Claude is used here for manual QA work only:
 - **Defect reports**
 - **Test reports**
 
-All of this work is based on the documentation in `../skypermit/docs/`. That documentation is the test basis: every test condition, test case and defect should trace back to a specific document (and section) in `docs/`. If the docs are ambiguous, contradictory or missing something, record it as an open question or finding. Don't fill the gap with assumptions.
+All of this work is based on the SkyPermit documentation in **Confluence**. That documentation is the test basis: every test condition, test case and defect should trace back to a specific page (and section) there. If the docs are ambiguous, contradictory or missing something, record it as an open question or finding. Don't fill the gap with assumptions.
+
+## Documentation source: Confluence
+
+- Site `dragan1925.atlassian.net` (cloudId `fda6a7bd-b624-41c9-b57a-3bf22663b4ab`), space **SkyPermit Docs** (key `SD1`, space id `393220`).
+- Read pages with the Atlassian MCP read tools only: `getConfluencePage`, `getPagesInConfluenceSpace`, `searchConfluenceUsingCql` (e.g. `space = SD1 AND text ~ "curfew"`).
+- Confluence is read-only for this kit, like `../skypermit`: never create, update or comment on pages. Report doc problems as findings instead.
+
+| # | Page title | Page id |
+|---|---|---|
+| 01 | 01 — Data Model | 458753 |
+| 02 | 02 — State Machine | 131074 |
+| 03 | 03 — API Contract | 65822 |
+| 04 | 04 — Frontend Spec | 393438 |
+| 05 | 05 — Open Questions | 98576 |
+| 06 | 06 — Business Rules | 491521 |
+| 07 | 07 — Clarifications | 524289 |
+| 08 | 08 — UML Diagrams | 327682 |
+
+Short names (`06`, `06 §1.4`) refer to these pages. Page URL: `https://dragan1925.atlassian.net/wiki/spaces/SD1/pages/<page id>`.
+
+**What still comes from `../skypermit` (local, read-only):**
+- **Code:** `app/`, `components/`, `lib/`, `supabase/`, `tests/`. `data-testid` selectors are always looked up in the code (`app/`, `components/`), not in Confluence.
+- **Exception: `scripts/uncovered-rules.mjs`** reads `../skypermit/docs/06-business-rules.md` and `07-clarifications.md` locally because a Node script can't call MCP. So `/cover-gaps` builds its rule list from the local copies. If those differ from Confluence, Confluence wins, and the difference is recorded as a finding.
 
 **Out of scope:** generating automated tests (test scripts, framework code, page objects, etc.). Don't produce automation code, even when asked to "implement" a test case. Write the test case in manual form instead.
 

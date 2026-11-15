@@ -1,8 +1,8 @@
 ---
 name: test-case-creator
-description: Generate atomic, low-level manual test cases (one check per scenario) for SkyPermit from ../skypermit/docs, saved as one markdown file per test case in test-cases/<area>/ with ID, doc ref, preconditions, steps and expected result. Input is a doc file, a doc section (e.g. "06-business-rules.md §1.4"), or a single described scenario. Use this skill whenever the user asks to write, generate, derive or add test cases, test scenarios or checks for any SkyPermit requirement, rule, endpoint, state transition or screen, even if they don't say "test case" explicitly (e.g. "cover the curfew rule", "what should we check for cancel?").
+description: Generate atomic, low-level manual test cases (one check per scenario) for SkyPermit from the SkyPermit Docs Confluence space, saved as one markdown file per test case in test-cases/<area>/ with ID, doc ref, preconditions, steps and expected result. Input is a doc page, a doc section (e.g. "06 — Business Rules §1.4" or "06 §1.4"), or a single described scenario. Use this skill whenever the user asks to write, generate, derive or add test cases, test scenarios or checks for any SkyPermit requirement, rule, endpoint, state transition or screen, even if they don't say "test case" explicitly (e.g. "cover the curfew rule", "what should we check for cancel?").
 argument-hint: <doc | doc §section | "scenario description">
-allowed-tools: Read, Grep, Glob, Write
+allowed-tools: Read, Grep, Glob, Write, mcp__atlassian__getConfluencePage, mcp__atlassian__getPagesInConfluenceSpace, mcp__atlassian__searchConfluenceUsingCql
 ---
 
 # Atomic test cases
@@ -14,16 +14,16 @@ Why atomic: when a test case fails, its ID alone should tell you what's broken. 
 ## 1. Understand the input
 
 `$ARGUMENTS` is one of these:
-- **A doc or section** (`06-business-rules.md`, `06 §1.4`, `03-api-contract.md Reviewer`): generate a **set** of test cases covering that scope.
+- **A doc or section** (`06 — Business Rules`, `06 §1.4`, `03 Reviewer`): generate a **set** of test cases covering that scope.
 - **A scenario description** (`"window ends exactly at curfew start in KBP-CTR-3"`): generate **exactly one** test case.
-- **Empty or unclear:** ask what to cover. List `../skypermit/docs/` to help.
+- **Empty or unclear:** ask what to cover. List the pages of the `SD1` space (`getPagesInConfluenceSpace`) to help.
 
-Look up short names in `../skypermit/docs/` (`06` → `06-business-rules.md`). Every input, even a scenario, needs a source in the docs. If you can't find one, say so and don't write a test case. A test case that doesn't come from a requirement can't be judged pass or fail.
+Resolve short names with the page table in `CLAUDE.md` (`06` → `06 — Business Rules`, id `491521`). For a scenario, find its source with `searchConfluenceUsingCql` (`space = SD1 AND text ~ "<term>"`). Every input, even a scenario, needs a source in the docs. If you can't find one, say so and don't write a test case. A test case that doesn't come from a requirement can't be judged pass or fail.
 
 ## 2. Read the test basis
 
-- Read the target doc or section, plus any docs it references.
-- Always check `05-open-questions.md` and `07-clarifications.md` for the same topic. `07` overrides `06` where they disagree. `05` says what is still open.
+- Read the target page or section from Confluence (`getConfluencePage`), plus any pages it references. Don't use `../skypermit/docs/` as the source.
+- Always check `05 — Open Questions` and `07 — Clarifications` for the same topic. `07` overrides `06` where they disagree. `05` says what is still open.
 - `../skypermit` is read-only (see `CLAUDE.md`). Don't run anything there.
 
 ## 3. Derive test conditions (doc/section input)
@@ -73,7 +73,7 @@ Read `templates/test-case.md` and copy it for each test case. Replace every `<pl
 What goes into each placeholder:
 - `<ID>`: the ID chosen in step 4, used in both the heading and the **ID** field.
 - `<title>`: one line naming the single check.
-- `<doc ref>`: `<doc file> §<section>`, plus the governing source in parentheses if the doc cites one, e.g. `06-business-rules.md §1.4 (TSD-4 §4)`.
+- `<doc ref>`: `<Confluence page title> §<section>`, plus the governing source in parentheses if the doc cites one, e.g. `06 — Business Rules §1.4 (TSD-4 §4)`.
 - `<precondition>`: one numbered item per piece of setup that must exist before step 1, with concrete data.
 - `<step>`: one numbered item per action, with exact values.
 - `<expected result>`: the single observable outcome.
@@ -92,7 +92,7 @@ Write at the lowest level a tester can execute without interpretation:
 # TC-TW-007: Window crossing into the A-7 curfew in KBP-CTR-3 is rejected
 
 **ID:** TC-TW-007
-**Doc ref:** 06-business-rules.md §1.4 (TSD-4 §4; A-7 §1)
+**Doc ref:** 06 — Business Rules §1.4 (TSD-4 §4; A-7 §1)
 
 ## Preconditions
 1. Operator O1 is logged in; `authorisation_level` = `L2`, `status` = `ACTIVE`.
