@@ -1,0 +1,1209 @@
+{
+  "collection": "SKY-2 · API",
+  "collectionId": "8698a2b4-7327-429e-b785-128dc4da6a65",
+  "environmentId": "8005135-305daae7-19dd-4aae-8a49-7a2fcec7506f",
+  "baseUrl": "https://skypermit.vercel.app/api/v1",
+  "postmanCloudRun": "https://go.postman.co/workspace/35768908-4935-42f4-a37e-63d2d4de4e90/run/8005135-d6d37725-1f28-4a6f-b009-f35d3973909d",
+  "started": 1794950843384,
+  "completed": 1794950885920,
+  "summary": {
+    "iterations": {
+      "executed": 1,
+      "errors": 0
+    },
+    "executedRequests": {
+      "executed": 41,
+      "errors": 0
+    },
+    "prerequestScripts": {
+      "executed": 21,
+      "errors": 0
+    },
+    "postresponseScripts": {
+      "executed": 41,
+      "errors": 0
+    },
+    "tests": {
+      "executed": 179,
+      "failed": 0,
+      "passed": 179,
+      "skipped": 0
+    },
+    "timeStats": {
+      "responseAverage": 1015.829268292683,
+      "responseMin": 589,
+      "responseMax": 3347,
+      "responseStandardDeviation": 459.50683545111036
+    }
+  },
+  "runError": null,
+  "executions": [
+    {
+      "name": "setup API-OP-001: register operator O1",
+      "method": "POST",
+      "url": "api/v1/operators",
+      "code": 201,
+      "status": "Created",
+      "time": 3347,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "authorisation_level is L1 (03: registration always L1)",
+          "status": "passed"
+        },
+        {
+          "name": "status is ACTIVE",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-001: create pilot P1 (R_BASIC, certified 6 months ago)",
+      "method": "POST",
+      "url": "api/v1/pilots",
+      "code": 201,
+      "status": "Created",
+      "time": 1052,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "rating is R_BASIC",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-001: create aircraft A1 (2000 g, C1)",
+      "method": "POST",
+      "url": "api/v1/aircraft",
+      "code": 201,
+      "status": "Created",
+      "time": 1223,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "mtom_grams is 2000",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-001: create flight request FR1 in DRAFT (DNI-OPN-1, start = now + 5 h 59 m)",
+      "method": "POST",
+      "url": "api/v1/flight-requests",
+      "code": 201,
+      "status": "Created",
+      "time": 1250,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "API-OP-001: validate with window start = submission + 5 h 59 m in DNI-OPN-1 returns 422 TIME_WINDOW (TSD-4 §2.1)",
+      "method": "POST",
+      "url": "api/v1/flight-requests/2b61d41d-f97c-4365-97c3-75eefdac74d8/validate",
+      "code": 422,
+      "status": "Unprocessable Entity",
+      "time": 1249,
+      "tests": [
+        {
+          "name": "Status is 422",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is TIME_WINDOW",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is TSD-4 §2.1 (06 §6)",
+          "status": "passed"
+        },
+        {
+          "name": "message is a non-empty string (03 §The 422 body)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-003: register operator O1",
+      "method": "POST",
+      "url": "api/v1/operators",
+      "code": 201,
+      "status": "Created",
+      "time": 968,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "authorisation_level is L1 (03: registration always L1)",
+          "status": "passed"
+        },
+        {
+          "name": "status is ACTIVE",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-003: create pilot P1 (R_BASIC, certified 6 months ago)",
+      "method": "POST",
+      "url": "api/v1/pilots",
+      "code": 201,
+      "status": "Created",
+      "time": 962,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "rating is R_BASIC",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-003: create aircraft A1 (2000 g, C1)",
+      "method": "POST",
+      "url": "api/v1/aircraft",
+      "code": 201,
+      "status": "Created",
+      "time": 795,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "mtom_grams is 2000",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-003: create flight request FR1 in DRAFT (DNI-OPN-1, start = now + 1 h 00 m)",
+      "method": "POST",
+      "url": "api/v1/flight-requests",
+      "code": 201,
+      "status": "Created",
+      "time": 1216,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "API-OP-003: validate with window start = submission + 1 h 00 m (lead time far below 6 h) in DNI-OPN-1 returns 422 TIME_WINDOW (TSD-4 §2.1)",
+      "method": "POST",
+      "url": "api/v1/flight-requests/ee8c1ca3-6468-4169-a4f1-6f42689c3bda/validate",
+      "code": 422,
+      "status": "Unprocessable Entity",
+      "time": 1243,
+      "tests": [
+        {
+          "name": "Status is 422",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is TIME_WINDOW",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is TSD-4 §2.1 (06 §6)",
+          "status": "passed"
+        },
+        {
+          "name": "message is a non-empty string (03 §The 422 body)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-005: register operator O1",
+      "method": "POST",
+      "url": "api/v1/operators",
+      "code": 201,
+      "status": "Created",
+      "time": 906,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "authorisation_level is L1 (03: registration always L1)",
+          "status": "passed"
+        },
+        {
+          "name": "status is ACTIVE",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-005: create pilot P1 (R_BASIC, certified 6 months ago)",
+      "method": "POST",
+      "url": "api/v1/pilots",
+      "code": 201,
+      "status": "Created",
+      "time": 863,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "rating is R_BASIC",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-005: create aircraft A1 (2000 g, C1)",
+      "method": "POST",
+      "url": "api/v1/aircraft",
+      "code": 201,
+      "status": "Created",
+      "time": 834,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "mtom_grams is 2000",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-005: create flight request FR1 in DRAFT (DNI-OPN-1, start = now + 5 h 00 m)",
+      "method": "POST",
+      "url": "api/v1/flight-requests",
+      "code": 201,
+      "status": "Created",
+      "time": 948,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-005: validate FR1 (expect 422 TIME_WINDOW)",
+      "method": "POST",
+      "url": "api/v1/flight-requests/4d930cf2-cd08-448e-9b75-e2478aaa164a/validate",
+      "code": 422,
+      "status": "Unprocessable Entity",
+      "time": 984,
+      "tests": [
+        {
+          "name": "Status is 422",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is TIME_WINDOW",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is a string (GateFailure schema)",
+          "status": "passed"
+        },
+        {
+          "name": "message is a string (GateFailure schema)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "API-OP-005: validate failing lead time (+ 5 h 00 m), then GET the request: state stays DRAFT",
+      "method": "GET",
+      "url": "api/v1/flight-requests/4d930cf2-cd08-448e-9b75-e2478aaa164a",
+      "code": 200,
+      "status": "OK",
+      "time": 631,
+      "tests": [
+        {
+          "name": "Status is 200",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is FR1",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT (03: validate never changes state)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup TC-TW-001: register operator O1",
+      "method": "POST",
+      "url": "api/v1/operators",
+      "code": 201,
+      "status": "Created",
+      "time": 985,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "authorisation_level is L1 (03: registration always L1)",
+          "status": "passed"
+        },
+        {
+          "name": "status is ACTIVE",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup TC-TW-001: create pilot P1 (R_BASIC, certified 6 months ago)",
+      "method": "POST",
+      "url": "api/v1/pilots",
+      "code": 201,
+      "status": "Created",
+      "time": 589,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "rating is R_BASIC",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup TC-TW-001: create aircraft A1 (2000 g, C1)",
+      "method": "POST",
+      "url": "api/v1/aircraft",
+      "code": 201,
+      "status": "Created",
+      "time": 602,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "mtom_grams is 2000",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup TC-TW-001: create flight request FR1 in DRAFT (DNI-OPN-1, start = now + 5 h 00 m)",
+      "method": "POST",
+      "url": "api/v1/flight-requests",
+      "code": 201,
+      "status": "Created",
+      "time": 992,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "TC-TW-001: Window starting 5 h 00 m after submission in DNI-OPN-1 fails the TIME_WINDOW lead-time rule",
+      "method": "POST",
+      "url": "api/v1/flight-requests/1bc8121f-9609-4510-b3a4-468efb7b66ce/submit",
+      "code": 422,
+      "status": "Unprocessable Entity",
+      "time": 1101,
+      "tests": [
+        {
+          "name": "Status is 422",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is TIME_WINDOW",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is TSD-4 §2.1 (06 §6)",
+          "status": "passed"
+        },
+        {
+          "name": "message is a string (GateFailure schema)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "TC-TW-001: check state REJECTED",
+      "method": "GET",
+      "url": "api/v1/flight-requests/1bc8121f-9609-4510-b3a4-468efb7b66ce",
+      "code": 200,
+      "status": "OK",
+      "time": 649,
+      "tests": [
+        {
+          "name": "Status is 200",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is FR1",
+          "status": "passed"
+        },
+        {
+          "name": "state is REJECTED (02: gates fail → REJECTED)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-006: register operator O1",
+      "method": "POST",
+      "url": "api/v1/operators",
+      "code": 201,
+      "status": "Created",
+      "time": 912,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "authorisation_level is L1 (03: registration always L1)",
+          "status": "passed"
+        },
+        {
+          "name": "status is ACTIVE",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-006: create pilot P1 (R_BASIC, certified 6 months ago)",
+      "method": "POST",
+      "url": "api/v1/pilots",
+      "code": 201,
+      "status": "Created",
+      "time": 736,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "rating is R_BASIC",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-006: create aircraft A1 (2000 g, C1)",
+      "method": "POST",
+      "url": "api/v1/aircraft",
+      "code": 201,
+      "status": "Created",
+      "time": 659,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "mtom_grams is 2000",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-006: create flight request FR1 in DRAFT (DNI-OPN-1, start = now + 5 h 00 m)",
+      "method": "POST",
+      "url": "api/v1/flight-requests",
+      "code": 201,
+      "status": "Created",
+      "time": 1158,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-006: submit FR1 (expect 422 TIME_WINDOW)",
+      "method": "POST",
+      "url": "api/v1/flight-requests/180e5639-babe-46db-a2c5-0183c182cde9/submit",
+      "code": 422,
+      "status": "Unprocessable Entity",
+      "time": 1295,
+      "tests": [
+        {
+          "name": "Status is 422",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is TIME_WINDOW",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is a string (GateFailure schema)",
+          "status": "passed"
+        },
+        {
+          "name": "message is a string (GateFailure schema)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "API-OP-006: submit failing lead time (+ 5 h 00 m), then GET the request: state REJECTED with failing_gate and rule_reference stored",
+      "method": "GET",
+      "url": "api/v1/flight-requests/180e5639-babe-46db-a2c5-0183c182cde9",
+      "code": 200,
+      "status": "OK",
+      "time": 655,
+      "tests": [
+        {
+          "name": "Status is 200",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is FR1",
+          "status": "passed"
+        },
+        {
+          "name": "state is REJECTED (02)",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is TIME_WINDOW",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is TSD-4 §2.1 (06 §6, 01 §FlightRequest)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-007: register operator O1",
+      "method": "POST",
+      "url": "api/v1/operators",
+      "code": 201,
+      "status": "Created",
+      "time": 932,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "authorisation_level is L1 (03: registration always L1)",
+          "status": "passed"
+        },
+        {
+          "name": "status is ACTIVE",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-007: create pilot P1 (R_BASIC, certified 6 months ago)",
+      "method": "POST",
+      "url": "api/v1/pilots",
+      "code": 201,
+      "status": "Created",
+      "time": 605,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "rating is R_BASIC",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-007: create aircraft A1 (2000 g, C1)",
+      "method": "POST",
+      "url": "api/v1/aircraft",
+      "code": 201,
+      "status": "Created",
+      "time": 602,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "mtom_grams is 2000",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-007: create flight request FR1 in DRAFT (DNI-OPN-1, start = now + 5 h 00 m)",
+      "method": "POST",
+      "url": "api/v1/flight-requests",
+      "code": 201,
+      "status": "Created",
+      "time": 1002,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-007: submit FR1 (expect 422 TIME_WINDOW)",
+      "method": "POST",
+      "url": "api/v1/flight-requests/91591956-4aca-4fa4-a22b-14e85ad4502c/submit",
+      "code": 422,
+      "status": "Unprocessable Entity",
+      "time": 1231,
+      "tests": [
+        {
+          "name": "Status is 422",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is TIME_WINDOW",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is a string (GateFailure schema)",
+          "status": "passed"
+        },
+        {
+          "name": "message is a string (GateFailure schema)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-007: check FR1 state REJECTED",
+      "method": "GET",
+      "url": "api/v1/flight-requests/91591956-4aca-4fa4-a22b-14e85ad4502c",
+      "code": 200,
+      "status": "OK",
+      "time": 901,
+      "tests": [
+        {
+          "name": "Status is 200",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is FR1",
+          "status": "passed"
+        },
+        {
+          "name": "state is REJECTED",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "API-OP-007: submit failing lead time (+ 5 h 00 m), then submit the same request again: 409",
+      "method": "POST",
+      "url": "api/v1/flight-requests/91591956-4aca-4fa4-a22b-14e85ad4502c/submit",
+      "code": 409,
+      "status": "Conflict",
+      "time": 640,
+      "tests": [
+        {
+          "name": "Status is 409",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "error is a string (Error schema; text not asserted)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "API-OP-007: check state stays REJECTED",
+      "method": "GET",
+      "url": "api/v1/flight-requests/91591956-4aca-4fa4-a22b-14e85ad4502c",
+      "code": 200,
+      "status": "OK",
+      "time": 1923,
+      "tests": [
+        {
+          "name": "Status is 200",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is FR1",
+          "status": "passed"
+        },
+        {
+          "name": "state stays REJECTED (02: REJECTED is terminal)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-008: register operator O1",
+      "method": "POST",
+      "url": "api/v1/operators",
+      "code": 201,
+      "status": "Created",
+      "time": 1183,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "authorisation_level is L1 (03: registration always L1)",
+          "status": "passed"
+        },
+        {
+          "name": "status is ACTIVE",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-008: create pilot P1 (R_BASIC, certified 19 months ago — lapsed)",
+      "method": "POST",
+      "url": "api/v1/pilots",
+      "code": 201,
+      "status": "Created",
+      "time": 826,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "rating is R_BASIC",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-008: create aircraft A1 (2000 g, C1)",
+      "method": "POST",
+      "url": "api/v1/aircraft",
+      "code": 201,
+      "status": "Created",
+      "time": 592,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "mtom_grams is 2000",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "setup API-OP-008: create flight request FR1 in DRAFT (DNI-OPN-1, start = now + 5 h 00 m)",
+      "method": "POST",
+      "url": "api/v1/flight-requests",
+      "code": 201,
+      "status": "Created",
+      "time": 1397,
+      "tests": [
+        {
+          "name": "Status is 201",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "id is a non-empty string",
+          "status": "passed"
+        },
+        {
+          "name": "state is DRAFT",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "API-OP-008: validate with lapsed pilot certification and window start = now + 5 h 00 m in DNI-OPN-1 returns 422 PILOT (OH-1 §2.3), not TIME_WINDOW",
+      "method": "POST",
+      "url": "api/v1/flight-requests/c5920b76-efb6-479e-b18f-ee62a15eea0d/validate",
+      "code": 422,
+      "status": "Unprocessable Entity",
+      "time": 1011,
+      "tests": [
+        {
+          "name": "Status is 422",
+          "status": "passed"
+        },
+        {
+          "name": "Body is JSON",
+          "status": "passed"
+        },
+        {
+          "name": "failing_gate is PILOT (06 Evaluation order: first failure wins)",
+          "status": "passed"
+        },
+        {
+          "name": "rule_reference is OH-1 §2.3 (06 §6)",
+          "status": "passed"
+        },
+        {
+          "name": "message is a non-empty string (03 §The 422 body)",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}
