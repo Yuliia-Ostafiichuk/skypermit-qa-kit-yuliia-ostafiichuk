@@ -69,8 +69,9 @@ Unknown command or missing arguments → say what is missing in one line and sto
 ```
 
 - Each item has `test_id` or `case_id`, and `status` = `passed` | `failed` | `skipped`. A `failed` item without `message` → write it anyway and warn; the failure reason belongs in the defect, not here.
-- `case_id` → resolve to the test in this run by title prefix `<case_id>: ` (`testruns list` with `run_id`). Not in the run → warn, skip it.
-1. `testruns list` with `run_id` → map `test_id` → existing testrun.
+- The array from `/postman-cli-run` is taken as is: `case_id`, `status`, optional `message`. Any other `status` value → don't write that item; list it under `rejected` with a warning.
+1. `testruns list` with `run_id`, `per_page: 100`, following `page` while `meta.has_more` is true. Build two maps: `test_id` → testrun, and `case_id` → testrun from `test_title` (it comes with tags appended, e.g. `… @SKY-3`; strip them, then match the prefix `<case_id>: ` exactly, so `API-OP-01` never matches `API-OP-013`).
+   - A `case_id` not found in the full list → don't write it; list it under `rejected` with a warning. For a `failed` item, the warning names the case and its message, so the failure isn't lost.
 2. For each result: existing testrun → `testruns update` (`testrun_id`, `run_id`, `status`, `message`); none → `testruns create` (`run_id`, `test_id`, `status`, `message`).
 3. Close the run: `runs update` with `run_id`, `status_event: "finish_manual"` (`"finish"` if the run is not manual). Tests in the run that got no result stay `pending`; list them as a warning.
 
@@ -79,6 +80,7 @@ Unknown command or missing arguments → say what is missing in one line and sto
   "run_id": "efe3c242",
   "written": [{"test_id": "a8156e75", "status": "failed"}],
   "pending": ["2ae9f681"],
+  "rejected": [{"case_id": "API-OP-009", "status": "failed", "reason": "not in run"}],
   "closed": true,
   "counts": {"passed": 0, "failed": 1, "skipped": 0, "pending": 1},
   "warnings": []

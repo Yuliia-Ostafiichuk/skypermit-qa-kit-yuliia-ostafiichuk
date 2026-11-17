@@ -59,7 +59,7 @@ Only files created in this run may be deleted later. Never touch a test case tha
 
 ## 4. Verify each new test case
 
-When all rules are generated, launch one `tc-verifier` subagent per new test case, all in the same message so they run in parallel. Pass only the path, e.g. `test-cases/zone-gate/TC-ZONE-001.md`. Wait for every verifier to report back before going on.
+When all rules are generated, launch one `tc-verifier` subagent per new test case, all in the same message so they run in parallel. Pass the path and the flag `mode: api` (these are API cases from `api-test-case-creator`), e.g. `test-cases/api/API-OP-008.md` + `mode: api`. Wait for every verifier to report back before going on.
 
 Read the overall status from the verifier's heading `## <ID> — <STATUS>`, then act on it:
 
