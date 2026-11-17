@@ -40,6 +40,14 @@ Short names (`06`, `06 §1.4`) refer to these pages. Page URL: `https://dragan19
 
 **Out of scope:** generating automated tests (test scripts, framework code, page objects, etc.). Don't produce automation code, even when asked to "implement" a test case. Write the test case in manual form instead.
 
+**Exception: API automation through Postman.** Only two skills may do this. `/postman-collection-builder` turns API cases from `test-cases/` into a **new** Postman collection and environment (workspace `SkyPermit`, id `35768908-4935-42f4-a37e-63d2d4de4e90`). `/postman-cli-run` runs a collection with Postman CLI after the user's explicit «запускай». Rules for both:
+- Never change or delete existing Postman collections or environments.
+- Secrets live only in environment variables of type `secret` with no stored value. Pass them to the CLI as `--env-var "<var>=$SKYPERMIT_<NAME>"` from the user's shell, and never print them.
+- Run logs go to `api-automation/runs/` with secrets removed. Raw CLI reports stay in the scratchpad (`*.raw.json` is gitignored).
+- Never fix a test, a collection or data just to make a run pass. Report the failure instead.
+
+This exception doesn't cover code-based frameworks (Playwright, Vitest, etc.). Those stay out of scope.
+
 ## Directory structure
 
 All QA folders live at the root of this repo (`skypermit-qa-kit-yuliia-ostafiichuk/`), never inside `../skypermit`.
@@ -53,12 +61,16 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 │   └── skills/         # Claude Code skills for the QA workflows above
 │       ├── audit-permissions/  # /audit-permissions: read-only audit of permission rules in all settings files
 │       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: API test cases for uncovered business rules via api-test-case-creator (not created yet), verified by tc-verifier
+│       ├── postman-collection-builder/  # /postman-collection-builder <JSON>: API cases + openapi.yaml → NEW Postman collection + environment via Postman MCP; stops for review, runs nothing
+│       ├── postman-cli-run/  # /postman-cli-run <JSON>: runs one collection via Postman CLI after explicit «запускай»; redacted log → api-automation/runs/, per-case results for testomat-sync report
 │       ├── jira-intake/  # /jira-intake <JIRA-KEY>: read-only, one Jira issue → JSON (key, title, check_type, AC, confluence_url, notes)
 │       ├── testomat-sync/  # /testomat-sync upsert|run|report: the only place that writes to Testomat.io (shared by UI and API orchestrators)
 │       ├── story-doc-check/  # /story-doc-check <jira-intake JSON | file | empty>: read-only check of a story's acceptance criteria against Confluence
 │       ├── story-to-tests/  # /story-to-tests <KEY>: UI story → intake, doc + code check (stop), UI cases + tc-verifier, approval gate, testomat-sync upsert + run
 │       ├── ui-test-case-creator/  # /ui-test-case-creator <doc | doc §section | scenario>: atomic manual UI/E2E test cases (EP, BV, state transition)
 │       └── test-plan/  # /test-plan <file-or-dir>: one-page test plan
+├── api-automation/
+│   └── runs/           # Redacted Postman CLI run logs from /postman-cli-run (no bodies, headers or secrets)
 ├── open-questions/     # Doc gaps found by /cover-gaps (NOTHING FOUND IN DOCUMENTATION) + per-run JSON summaries
 ├── scripts/
 │   └── uncovered-rules.mjs  # Read-only: 06 §6 rules (per 07) with no test case, grouped by gate, as JSON
