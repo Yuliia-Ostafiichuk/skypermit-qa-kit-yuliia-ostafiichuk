@@ -67,6 +67,7 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 │       ├── jira-intake/  # /jira-intake <JIRA-KEY>: read-only, one Jira issue → JSON (key, title, check_type, AC, confluence_url, notes)
 │       ├── testomat-sync/  # /testomat-sync upsert|run|report: the only place that writes to Testomat.io (shared by UI and API orchestrators)
 │       ├── story-doc-check/  # /story-doc-check <jira-intake JSON | file | empty>: read-only check of a story's acceptance criteria against Confluence
+│       ├── story-to-api-tests/  # /story-to-api-tests <KEY>: API story → intake, doc + code check (stop), API cases + tc-verifier (mode: api), approval gate, testomat-sync upsert + run «<KEY> · API», Postman collection (review stop), postman-cli-run after «запускай», testomat-sync report
 │       ├── story-to-tests/  # /story-to-tests <KEY>: UI story → intake, doc + code check (stop), UI cases + tc-verifier, approval gate, testomat-sync upsert + run
 │       ├── ui-test-case-creator/  # /ui-test-case-creator <doc | doc §section | scenario>: atomic manual UI/E2E test cases (EP, BV, state transition)
 │       └── test-plan/  # /test-plan <file-or-dir>: one-page test plan
