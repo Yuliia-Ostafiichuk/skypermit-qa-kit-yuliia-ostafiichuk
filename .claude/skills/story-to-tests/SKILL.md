@@ -40,8 +40,8 @@ Invoke `Skill jira-intake <KEY>` and take its JSON (call it *intake*).
 
 - No JSON (issue not found, no access) → relay its message and stop.
 - `check_type` is not `"ui"`:
-  - `"api"` → say: «<KEY> — API-задача (check_type = api). Для API-задач буде окремий флоу (story-to-api-tests).» Stop.
-  - `null` → say that the story has no unambiguous `ui`/`api` label, quote the intake `notes`, and that API stories will get a separate flow. Stop.
+  - `"api"` → say: «<KEY> — API-задача (check_type = api). Запусти `/story-to-api-tests <KEY>`.» Stop.
+  - `null` → say that the story has no unambiguous `ui`/`api` label, quote the intake `notes`, and suggest `/story-to-api-tests` for API stories. Stop.
 - `acceptance_criteria` is `[]` → say so, quote the intake `notes`, stop.
 
 ## 2. Analysis → stop 1
