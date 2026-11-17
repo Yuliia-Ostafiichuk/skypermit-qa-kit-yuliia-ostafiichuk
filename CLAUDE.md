@@ -59,8 +59,9 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 │   │   ├── implementation-check.md  # Read-only subagent: jira-intake JSON → per-AC implemented/partial/not_found with file:line
 │   │   └── tc-verifier.md  # Read-only subagent: verifies a test case against docs + code
 │   └── skills/         # Claude Code skills for the QA workflows above
+│       ├── api-test-case-creator/  # /api-test-case-creator <rule JSON | scenario>: API cases for ONE business rule → test-cases/api/API-OP-NNN.md (BV/EP via validate, state-transition chains)
 │       ├── audit-permissions/  # /audit-permissions: read-only audit of permission rules in all settings files
-│       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: API test cases for uncovered business rules via api-test-case-creator (not created yet), verified by tc-verifier
+│       ├── cover-gaps/ # /cover-gaps [--max N] [--gate G]: API test cases for uncovered business rules via api-test-case-creator, verified by tc-verifier
 │       ├── postman-collection-builder/  # /postman-collection-builder <JSON>: API cases + openapi.yaml → NEW Postman collection + environment via Postman MCP; stops for review, runs nothing
 │       ├── postman-cli-run/  # /postman-cli-run <JSON>: runs one collection via Postman CLI after explicit «запускай»; redacted log → api-automation/runs/, per-case results for testomat-sync report
 │       ├── jira-intake/  # /jira-intake <JIRA-KEY>: read-only, one Jira issue → JSON (key, title, check_type, AC, confluence_url, notes)
@@ -74,7 +75,7 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 ├── open-questions/     # Doc gaps found by /cover-gaps (NOTHING FOUND IN DOCUMENTATION) + per-run JSON summaries
 ├── scripts/
 │   └── uncovered-rules.mjs  # Read-only: 06 §6 rules (per 07) with no test case, grouped by gate, as JSON
-├── test-cases/         # Generated test cases
+├── test-cases/         # Generated test cases (ui/ = TC-UI-*, api/ = API-OP-*)
 ├── test-plans/         # Generated test plans (/test-plan)
 ├── CLAUDE.md
 └── README.md
