@@ -38,6 +38,8 @@ Short names (`06`, `06 §1.4`) refer to these pages. Page URL: `https://dragan19
 - **Code:** `app/`, `components/`, `lib/`, `supabase/`, `tests/`. `data-testid` selectors are always looked up in the code (`app/`, `components/`), not in Confluence.
 - **Exception: `scripts/uncovered-rules.mjs`** reads `../skypermit/docs/06-business-rules.md` and `07-clarifications.md` locally because a Node script can't call MCP. So `/cover-gaps` builds its rule list from the local copies. If those differ from Confluence, Confluence wins, and the difference is recorded as a finding.
 
+**Exception: `specs/` is a local snapshot of Confluence pages** for skills and scripts that can't call MCP or need the text offline. It currently holds `02-state-machine.md` (page 131074, «02 — State Machine», heading «Request Lifecycle») and `06-business-rules.md` (page 491521), copied word for word on 2026-11-22. **Confluence stays the source of truth.** Don't edit these files by hand; refresh them from Confluence. If a snapshot differs from Confluence, Confluence wins and the difference is recorded as a finding. Test cases and defects still cite the Confluence page (`02 §…`, `06 §…`), not the `specs/` file.
+
 **Out of scope:** generating automated tests (test scripts, framework code, page objects, etc.). Don't produce automation code, even when asked to "implement" a test case. Write the test case in manual form instead.
 
 **Exception: API automation through Postman.** Only two skills may do this. `/postman-collection-builder` turns API cases from `test-cases/` into a **new** Postman collection and environment (workspace `SkyPermit`, id `35768908-4935-42f4-a37e-63d2d4de4e90`). `/postman-cli-run` runs a collection with Postman CLI after the user's explicit «запускай». Rules for both:
@@ -74,6 +76,7 @@ skypermit-qa-kit-yuliia-ostafiichuk/
 ├── api-automation/
 │   └── runs/           # Redacted Postman CLI run logs from /postman-cli-run (no bodies, headers or secrets)
 ├── open-questions/     # Doc gaps found by /cover-gaps (NOTHING FOUND IN DOCUMENTATION) + per-run JSON summaries
+├── specs/              # Verbatim snapshot of Confluence pages 02 and 06 for skills/scripts; Confluence is the source of truth
 ├── scripts/
 │   └── uncovered-rules.mjs  # Read-only: 06 §6 rules (per 07) with no test case, grouped by gate, as JSON
 ├── test-cases/         # Generated test cases (ui/ = TC-UI-*, api/ = API-OP-*)
