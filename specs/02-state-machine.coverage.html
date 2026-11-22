@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02-state-machine · покриття</title>
+<style>
+:root{--bg:#fbfbf9;--fg:#1d1d1b;--muted:#6b6b66;--line:#d9d8d2;--card:#ffffff;
+--ok:#2f7d4f;--ok-bg:#dcefe2;--bad:#b23b3b;--bad-bg:#f6dede;--unk:#a66a00;--unk-bg:#fbebc8;
+--ep:#2f6fb0;--bv:#7a4bb0;--st:#2c7f86;--t:#555;--u:#a66a00}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17181a;--fg:#e9e8e3;--muted:#9a9a94;--line:#34363a;--card:#1f2124;
+--ok:#6cc78f;--ok-bg:#1e3a29;--bad:#ef8a8a;--bad-bg:#432323;--unk:#f0b851;--unk-bg:#40321a;--ep:#7fb2ea;--bv:#b996e6;--st:#6cc3ca;--t:#bbb;--u:#f0b851}}
+:root[data-theme="dark"]{--bg:#17181a;--fg:#e9e8e3;--muted:#9a9a94;--line:#34363a;--card:#1f2124;
+--ok:#6cc78f;--ok-bg:#1e3a29;--bad:#ef8a8a;--bad-bg:#432323;--unk:#f0b851;--unk-bg:#40321a;--ep:#7fb2ea;--bv:#b996e6;--st:#6cc3ca;--t:#bbb;--u:#f0b851}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:15px;margin:20px 0 8px}
+.sub{color:var(--muted);font-size:13px;word-break:break-all}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:92px}
+.stat b{display:block;font-size:20px}.stat span{color:var(--muted);font-size:12px}
+.problems{background:var(--bad-bg);border-radius:8px;padding:10px 14px 10px 32px;margin:12px 0}
+.okmsg{background:var(--ok-bg);border-radius:8px;padding:10px 14px;margin:12px 0}
+.param{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:14px 0}
+.param h3{margin-top:4px}
+.chart svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font-size:12px}
+.lab{fill:var(--muted)!important;font-size:11px!important}
+.guide{stroke:var(--line);stroke-dasharray:3 3}
+.axis{stroke:var(--fg);stroke-width:1.5}
+.ep rect{stroke-width:1.5}
+.ep.ok rect{fill:var(--ok-bg);stroke:var(--ok)}.ep.bad rect{fill:var(--bad-bg);stroke:var(--bad)}
+.ep.ok .arrow{stroke:var(--ok);fill:none;stroke-width:2}.ep.bad .arrow{stroke:var(--bad);fill:none;stroke-width:2}
+.rep{fill:var(--fg);opacity:.7}
+.tick{stroke-width:2}.tick.ok{stroke:var(--ok)}.tick.bad{stroke:var(--bad)}.tick.unk{stroke:var(--unk)}
+.bmark{stroke:var(--fg);stroke-width:2}.bmark.incl{fill:var(--fg)}.bmark.excl{fill:var(--card)}
+.bmark.unkn{fill:var(--unk-bg);stroke:var(--unk);stroke-dasharray:2 2}
+text.q{fill:var(--unk)!important;font-weight:700;font-size:10px!important}
+.blab{font-size:11px!important}
+.zooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:10px}
+.zcard{margin:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.zcard figcaption{font-size:13px}
+.zoom{width:100%;height:auto;display:block;margin:4px 0}
+.pt{stroke-width:2}.pt.ok{fill:var(--ok-bg);stroke:var(--ok)}.pt.bad{fill:var(--bad-bg);stroke:var(--bad)}.pt.unk{fill:var(--unk-bg);stroke:var(--unk)}
+.plab{font-size:12px!important;font-weight:600}
+.pexp{font-size:11px!important}.pexp.ok{fill:var(--ok)!important}.pexp.bad{fill:var(--bad)!important}.pexp.unk{fill:var(--unk)!important}
+.vals{list-style:none;margin:4px 0;padding:0;font-size:13px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}.dot.unk{background:var(--unk)}
+.incl.unk{color:var(--unk);font-weight:600}
+.meta{color:var(--muted);font-size:12px;margin-top:4px}
+.note,.empty{color:var(--muted);font-size:13px}
+.warn{color:var(--bad);font-size:12px;font-weight:600}
+.chip{display:inline-block;font:600 11px/1.6 ui-monospace,Menlo,monospace;padding:0 6px;border-radius:10px;text-decoration:none;border:1px solid currentColor;white-space:nowrap;margin:1px 0}
+.chip-EP{color:var(--ep)}.chip-BV{color:var(--bv)}.chip-ST{color:var(--st)}.chip-T{color:var(--t)}.chip-U{color:var(--u)}.chip-X{color:var(--bad)}
+.role{font-size:10px;color:var(--muted);margin:0 4px 0 2px}.role.q{color:var(--unk);font-weight:700}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+thead th,.st tr:first-child th{background:var(--card);position:sticky;top:0}
+.st th{white-space:nowrap}.st .corner{color:var(--muted);font-weight:400}
+.cell{min-width:96px}
+.cell.legal{background:var(--ok-bg)}.cell.illegal{background:var(--bad-bg)}.cell.unknown{background:var(--unk-bg)}
+.cell.missing{color:var(--bad);text-align:center;font-weight:700;outline:2px dashed var(--bad);outline-offset:-3px}
+.cell.uncovered{outline:2px dashed var(--bad);outline-offset:-3px}
+.cbody{font-weight:600}.cid{font-size:11px;color:var(--muted)}
+.legend{font-size:13px;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px 0 10px;vertical-align:middle;border:1px solid var(--line)}
+.sw.legal{background:var(--ok-bg)}.sw.illegal{background:var(--bad-bg)}.sw.unknown{background:var(--unk-bg)}
+td.num{font-variant-numeric:tabular-nums;color:var(--muted);width:48px}
+td q{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-word}
+td.chips{max-width:320px}
+.tests{columns:2 260px;font-size:13px;padding-left:18px}
+.unknowns li{margin-bottom:10px}
+:target{scroll-margin-top:16px;box-shadow:0 0 0 3px var(--unk)}
+@media (max-width:600px){td.chips{max-width:none}.trace td:nth-child(1){width:auto}}
+</style>
+</head>
+<body>
+<main>
+<h1>Покриття тест-дизайну: 02-state-machine</h1>
+<div class="sub">specs/02-state-machine.md</div>
+<div class="stats">
+  <div class="stat"><b>16</b><span>EP</span></div>
+  <div class="stat"><b>1</b><span>BV</span></div>
+  <div class="stat"><b>49</b><span>ST-клітинок</span></div>
+  <div class="stat"><b>27</b><span>тестів</span></div>
+  <div class="stat"><b>66/66</b><span>елементів покрито</span></div>
+  <div class="stat"><b>9</b><span>unknowns</span></div>
+</div>
+<div class="okmsg">Структурних проблем не знайдено: кожен EP, BV і ST покритий тестом, усі посилання існують.</div>
+
+<h2>1. Числові параметри: класи, межі, точки BV</h2>
+<p class="note">Смуги — класи EP (зелена valid, червона invalid, ромб — representative). На осі: ● включна межа, ○ не включна, ? — включність невідома. Під лінією — кожна межа крупно з трьома точками BV.</p>
+<section class="param">
+    <h3>час до `window_start` у момент cancel заявки `APPROVED`, год</h3>
+    <div class="chart"><svg viewBox="0 0 760 136" role="img" aria-label="Числова лінія: час до `window_start` у момент cancel заявки `APPROVED`, год"><line class="guide" x1="172.2215988779804" x2="172.2215988779804" y1="6" y2="80"><title>BV-01</title></line><a href="#EP-01"><g class="ep ok" id="EP-01"><title>EP-01 · більше ніж 2 години до window_start · valid</title><rect x="172.2215988779804" y="10" width="567.7784011220197" height="18" rx="4"/><path d="M732 12 L740 19 L732 26" class="arrow"/><path class="rep" d="M676.7096774193549 12 l6 7 l-6 7 l-6 -7 z"><title>representative: 24 години до window_start</title></path></g></a><text class="lab" x="78" y="23" text-anchor="end">EP-01</text><a href="#EP-02"><g class="ep bad" id="EP-02"><title>EP-02 · ближче ніж 2 години до window_start · invalid</title><rect x="86" y="36" width="86.2215988779804" height="18" rx="4"/><path d="M94 38 L86 45 L94 52" class="arrow"/><path class="rep" d="M149.29032258064518 38 l6 7 l-6 7 l-6 -7 z"><title>representative: 1 година до window_start</title></path></g></a><text class="lab" x="78" y="49" text-anchor="end">EP-02</text><line class="axis" x1="86" x2="740" y1="80" y2="80"/><line class="tick ok" x1="195.1528751753156" x2="195.1528751753156" y1="74" y2="86"><title>BV-01: 3 години до window_start → valid</title></line><line class="tick unk" x1="172.2215988779804" x2="172.2215988779804" y1="74" y2="86"><title>BV-01: 2 години до window_start → unknown</title></line><line class="tick bad" x1="149.29032258064518" x2="149.29032258064518" y1="74" y2="86"><title>BV-01: 1 година до window_start → invalid</title></line><a href="#BV-01"><circle class="bmark unkn" cx="172.2215988779804" cy="80" r="6"><title>BV-01 · межа 2 години до window_start · включність невідома</title></circle><text class="q" x="172.2215988779804" y="84" text-anchor="middle">?</text></a><text class="blab" x="172.2215988779804" y="104" text-anchor="middle">2 години до window_start · BV-01</text><text class="lab" x="78" y="84" text-anchor="end">години до window_start</text></svg></div>
+    
+    <div class="zooms"><figure class="zcard" id="BV-01">
+        <figcaption><b>BV-01</b> · межа <b>2 години до window_start</b> · крок 1 година · <span class="incl unk">включність невідома</span></figcaption>
+        <svg viewBox="0 0 230 74" class="zoom" aria-hidden="true"><line class="axis" x1="18" x2="212" y1="30" y2="30"/><line class="guide" x1="115" x2="115" y1="6" y2="30"/><circle class="pt ok" cx="179.66666666666669" cy="30" r="7"><title>3 години до window_start → valid</title></circle><text class="plab" x="179.66666666666669" y="54" text-anchor="middle">3</text><text class="pexp ok" x="179.66666666666669" y="68" text-anchor="middle">valid</text><circle class="pt unk" cx="115" cy="30" r="7"><title>2 години до window_start → unknown</title></circle><text class="plab" x="115" y="54" text-anchor="middle">2</text><text class="pexp unk" x="115" y="68" text-anchor="middle">unknown</text><circle class="pt bad" cx="50.33333333333333" cy="30" r="7"><title>1 година до window_start → invalid</title></circle><text class="plab" x="50.33333333333333" y="54" text-anchor="middle">1</text><text class="pexp bad" x="50.33333333333333" y="68" text-anchor="middle">invalid</text></svg>
+        <ul class="vals"><li><span class="dot ok"></span>3 години до window_start → valid</li><li><span class="dot unk"></span>2 години до window_start → unknown</li><li><span class="dot bad"></span>1 година до window_start → invalid</li></ul>
+        <div class="meta">тести: <a class="chip chip-T" href="#T-09">T-09</a> <a class="chip chip-T" href="#T-10">T-10</a> · питання: <a class="chip chip-U" href="#U-01">U-01</a> <a class="chip chip-U" href="#U-02">U-02</a></div>
+      </figure></div>
+  </section>
+<h3>Інші класи еквівалентності (нечислові параметри)</h3>
+     <table class="grid"><thead><tr><th>Id</th><th>Параметр</th><th>Клас</th><th>Valid</th><th>Representative</th><th>Тести</th></tr></thead><tbody>
+     <tr id="EP-03"><td><a class="chip chip-EP" href="#EP-03">EP-03</a></td><td>виконавець approve/reject (заголовок `X-Reviewer-Id`)</td><td>reviewer (запит з `X-Reviewer-Id`)</td>
+         <td><span class="dot ok"></span>valid</td><td>approve із заголовком X-Reviewer-Id</td>
+         <td><a class="chip chip-T" href="#T-03">T-03</a> <a class="chip chip-T" href="#T-04">T-04</a></td></tr><tr id="EP-04"><td><a class="chip chip-EP" href="#EP-04">EP-04</a></td><td>виконавець approve/reject (заголовок `X-Reviewer-Id`)</td><td>не reviewer (запит без `X-Reviewer-Id`)</td>
+         <td><span class="dot bad"></span>invalid</td><td>approve без заголовка X-Reviewer-Id</td>
+         <td><a class="chip chip-T" href="#T-11">T-11</a></td></tr><tr id="EP-05"><td><a class="chip chip-EP" href="#EP-05">EP-05</a></td><td>`note` у reject</td><td>note передано</td>
+         <td><span class="dot ok"></span>valid</td><td>reject з note</td>
+         <td><a class="chip chip-T" href="#T-04">T-04</a></td></tr><tr id="EP-06"><td><a class="chip chip-EP" href="#EP-06">EP-06</a></td><td>`note` у reject</td><td>note не передано</td>
+         <td><span class="dot bad"></span>invalid</td><td>reject без поля note</td>
+         <td><a class="chip chip-T" href="#T-12">T-12</a></td></tr><tr id="EP-07"><td><a class="chip chip-EP" href="#EP-07">EP-07</a></td><td>ініціатор cancel</td><td>operator</td>
+         <td><span class="dot ok"></span>valid</td><td>cancel від operator заявки</td>
+         <td><a class="chip chip-T" href="#T-06">T-06</a></td></tr><tr id="EP-08"><td><a class="chip chip-EP" href="#EP-08">EP-08</a></td><td>ініціатор cancel</td><td>не operator</td>
+         <td><span class="dot bad"></span>invalid</td><td>cancel від reviewer</td>
+         <td><a class="chip chip-T" href="#T-13">T-13</a></td></tr><tr id="EP-09"><td><a class="chip chip-EP" href="#EP-09">EP-09</a></td><td>спосіб переходу `APPROVED` → `COMPLETED`</td><td>виклик maintenance completion endpoint</td>
+         <td><span class="dot ok"></span>valid</td><td>complete через maintenance endpoint</td>
+         <td><a class="chip chip-T" href="#T-05">T-05</a></td></tr><tr id="EP-10"><td><a class="chip chip-EP" href="#EP-10">EP-10</a></td><td>спосіб переходу `APPROVED` → `COMPLETED`</td><td>минув час (вікно закінчилось) без виклику complete</td>
+         <td><span class="dot bad"></span>invalid</td><td>APPROVED, window_end у минулому, complete не викликано</td>
+         <td><a class="chip chip-T" href="#T-14">T-14</a></td></tr><tr id="EP-11"><td><a class="chip chip-EP" href="#EP-11">EP-11</a></td><td>стан іншої заявки на той самий aircraft з перетином у часі (overlap check)</td><td>інша заявка в `APPROVED` — враховується overlap check</td>
+         <td><span class="dot bad"></span>invalid</td><td>інша заявка APPROVED, вікна перетинаються</td>
+         <td><a class="chip chip-T" href="#T-15">T-15</a></td></tr><tr id="EP-12"><td><a class="chip chip-EP" href="#EP-12">EP-12</a></td><td>стан іншої заявки на той самий aircraft з перетином у часі (overlap check)</td><td>інша заявка в `UNDER_REVIEW` — враховується overlap check</td>
+         <td><span class="dot bad"></span>invalid</td><td>інша заявка UNDER_REVIEW, вікна перетинаються</td>
+         <td><a class="chip chip-T" href="#T-16">T-16</a></td></tr><tr id="EP-13"><td><a class="chip chip-EP" href="#EP-13">EP-13</a></td><td>стан іншої заявки на той самий aircraft з перетином у часі (overlap check)</td><td>інша заявка в `DRAFT` — невидима для overlap check</td>
+         <td><span class="dot ok"></span>valid</td><td>інша заявка DRAFT, вікна перетинаються</td>
+         <td><a class="chip chip-T" href="#T-17">T-17</a></td></tr><tr id="EP-14"><td><a class="chip chip-EP" href="#EP-14">EP-14</a></td><td>стан іншої заявки на той самий aircraft з перетином у часі (overlap check)</td><td>інша заявка в `REJECTED` — невидима для overlap check</td>
+         <td><span class="dot ok"></span>valid</td><td>інша заявка REJECTED, вікна перетинаються</td>
+         <td><a class="chip chip-T" href="#T-18">T-18</a></td></tr><tr id="EP-15"><td><a class="chip chip-EP" href="#EP-15">EP-15</a></td><td>стан іншої заявки на той самий aircraft з перетином у часі (overlap check)</td><td>інша заявка в `CANCELLED` — невидима для overlap check</td>
+         <td><span class="dot ok"></span>valid</td><td>інша заявка CANCELLED, вікна перетинаються</td>
+         <td><a class="chip chip-T" href="#T-19">T-19</a></td></tr><tr id="EP-16"><td><a class="chip chip-EP" href="#EP-16">EP-16</a></td><td>стан іншої заявки на той самий aircraft з перетином у часі (overlap check)</td><td>інша заявка в `COMPLETED` — невидима для overlap check</td>
+         <td><span class="dot ok"></span>valid</td><td>інша заявка COMPLETED, вікна перетинаються</td>
+         <td><a class="chip chip-T" href="#T-20">T-20</a></td></tr>
+     </tbody></table>
+
+<h2>2. Таблиця стан × дія</h2>
+<p class="legend"><span class="sw legal"></span>legal 10 <span class="sw illegal"></span>illegal 39 <span class="sw unknown"></span>unknown 0 · наведіть на клітинку, щоб побачити цитату</p>
+    <div class="scroll"><table class="st"><tr><th class="corner">стан \ дія</th><th>submit</th><th>gates pass (automatic)</th><th>gates fail (automatic)</th><th>approve</th><th>reject</th><th>complete</th><th>cancel</th></tr><tr><th>DRAFT</th><td id="ST-01" class="cell legal" title="ST-01 · legal
+рядок 31: | `DRAFT` | submit | `SUBMITTED` → immediately `UNDER_REVIEW` or `REJECTED` |">
+            <div class="cbody">→ SUBMITTED</div>
+            <div class="cid">ST-01</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-01">T-01</a> <a class="chip chip-T" href="#T-02">T-02</a></div>
+          </td><td id="ST-02" class="cell illegal" title="ST-02 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-02 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-21">T-21</a></div>
+          </td><td id="ST-03" class="cell illegal" title="ST-03 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-03 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-21">T-21</a></div>
+          </td><td id="ST-04" class="cell illegal" title="ST-04 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-04 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-21">T-21</a></div>
+          </td><td id="ST-05" class="cell illegal" title="ST-05 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-05 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-21">T-21</a></div>
+          </td><td id="ST-06" class="cell illegal" title="ST-06 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-06 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-21">T-21</a></div>
+          </td><td id="ST-07" class="cell legal" title="ST-07 · legal
+рядок 37: | `DRAFT` | cancel | `CANCELLED` |">
+            <div class="cbody">→ CANCELLED</div>
+            <div class="cid">ST-07</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-06">T-06</a></div>
+          </td></tr><tr><th>SUBMITTED</th><td id="ST-08" class="cell illegal" title="ST-08 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-08 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-22">T-22</a></div>
+          </td><td id="ST-09" class="cell legal" title="ST-09 · legal
+рядок 32: | `SUBMITTED` | (gates pass, automatic) | `UNDER_REVIEW` |">
+            <div class="cbody">→ UNDER_REVIEW</div>
+            <div class="cid">ST-09</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-01">T-01</a></div>
+          </td><td id="ST-10" class="cell legal" title="ST-10 · legal
+рядок 33: | `SUBMITTED` | (gates fail, automatic) | `REJECTED` |">
+            <div class="cbody">→ REJECTED</div>
+            <div class="cid">ST-10</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-02">T-02</a></div>
+          </td><td id="ST-11" class="cell illegal" title="ST-11 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-11 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-22">T-22</a></div>
+          </td><td id="ST-12" class="cell illegal" title="ST-12 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-12 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-22">T-22</a></div>
+          </td><td id="ST-13" class="cell illegal" title="ST-13 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-13 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-22">T-22</a></div>
+          </td><td id="ST-14" class="cell legal" title="ST-14 · legal
+рядок 38: | `SUBMITTED` | cancel | `CANCELLED` |">
+            <div class="cbody">→ CANCELLED</div>
+            <div class="cid">ST-14</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-07">T-07</a></div>
+          </td></tr><tr><th>UNDER_REVIEW</th><td id="ST-15" class="cell illegal" title="ST-15 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-15 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-23">T-23</a></div>
+          </td><td id="ST-16" class="cell illegal" title="ST-16 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-16 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-23">T-23</a></div>
+          </td><td id="ST-17" class="cell illegal" title="ST-17 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-17 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-23">T-23</a></div>
+          </td><td id="ST-18" class="cell legal" title="ST-18 · legal
+рядок 34: | `UNDER_REVIEW` | approve | `APPROVED` |">
+            <div class="cbody">→ APPROVED</div>
+            <div class="cid">ST-18</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-03">T-03</a></div>
+          </td><td id="ST-19" class="cell legal" title="ST-19 · legal
+рядок 35: | `UNDER_REVIEW` | reject | `REJECTED` |">
+            <div class="cbody">→ REJECTED</div>
+            <div class="cid">ST-19</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-04">T-04</a></div>
+          </td><td id="ST-20" class="cell illegal" title="ST-20 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-20 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-23">T-23</a></div>
+          </td><td id="ST-21" class="cell legal" title="ST-21 · legal
+рядок 39: | `UNDER_REVIEW` | cancel | `CANCELLED` |">
+            <div class="cbody">→ CANCELLED</div>
+            <div class="cid">ST-21</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-08">T-08</a></div>
+          </td></tr><tr><th>APPROVED</th><td id="ST-22" class="cell illegal" title="ST-22 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-22 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-24">T-24</a></div>
+          </td><td id="ST-23" class="cell illegal" title="ST-23 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-23 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-24">T-24</a></div>
+          </td><td id="ST-24" class="cell illegal" title="ST-24 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-24 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-24">T-24</a></div>
+          </td><td id="ST-25" class="cell illegal" title="ST-25 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-25 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-24">T-24</a></div>
+          </td><td id="ST-26" class="cell illegal" title="ST-26 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-26 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-24">T-24</a></div>
+          </td><td id="ST-27" class="cell legal" title="ST-27 · legal
+рядок 36: | `APPROVED` | complete | `COMPLETED` |">
+            <div class="cbody">→ COMPLETED</div>
+            <div class="cid">ST-27</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-05">T-05</a></div>
+          </td><td id="ST-28" class="cell legal" title="ST-28 · legal
+рядок 40: | `APPROVED` | cancel | `CANCELLED` |">
+            <div class="cbody">→ CANCELLED</div>
+            <div class="cid">ST-28</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-09">T-09</a></div>
+          </td></tr><tr><th>REJECTED</th><td id="ST-29" class="cell illegal" title="ST-29 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-29 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-25">T-25</a></div>
+          </td><td id="ST-30" class="cell illegal" title="ST-30 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-30 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-25">T-25</a></div>
+          </td><td id="ST-31" class="cell illegal" title="ST-31 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-31 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-25">T-25</a></div>
+          </td><td id="ST-32" class="cell illegal" title="ST-32 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-32 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-25">T-25</a></div>
+          </td><td id="ST-33" class="cell illegal" title="ST-33 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-33 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-25">T-25</a></div>
+          </td><td id="ST-34" class="cell illegal" title="ST-34 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-34 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-25">T-25</a></div>
+          </td><td id="ST-35" class="cell illegal" title="ST-35 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-35 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-25">T-25</a></div>
+          </td></tr><tr><th>CANCELLED</th><td id="ST-36" class="cell illegal" title="ST-36 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-36 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-26">T-26</a></div>
+          </td><td id="ST-37" class="cell illegal" title="ST-37 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-37 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-26">T-26</a></div>
+          </td><td id="ST-38" class="cell illegal" title="ST-38 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-38 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-26">T-26</a></div>
+          </td><td id="ST-39" class="cell illegal" title="ST-39 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-39 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-26">T-26</a></div>
+          </td><td id="ST-40" class="cell illegal" title="ST-40 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-40 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-26">T-26</a></div>
+          </td><td id="ST-41" class="cell illegal" title="ST-41 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-41 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-26">T-26</a></div>
+          </td><td id="ST-42" class="cell illegal" title="ST-42 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-42 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-26">T-26</a></div>
+          </td></tr><tr><th>COMPLETED</th><td id="ST-43" class="cell illegal" title="ST-43 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-43 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-27">T-27</a></div>
+          </td><td id="ST-44" class="cell illegal" title="ST-44 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-44 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-27">T-27</a></div>
+          </td><td id="ST-45" class="cell illegal" title="ST-45 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-45 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-27">T-27</a></div>
+          </td><td id="ST-46" class="cell illegal" title="ST-46 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-46 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-27">T-27</a></div>
+          </td><td id="ST-47" class="cell illegal" title="ST-47 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-47 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-27">T-27</a></div>
+          </td><td id="ST-48" class="cell illegal" title="ST-48 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-48 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-27">T-27</a></div>
+          </td><td id="ST-49" class="cell illegal" title="ST-49 · illegal · 409
+рядок 25: listed here is illegal and must return `409`">
+            <div class="cbody">✕</div>
+            <div class="cid">ST-49 · 409</div>
+            <div class="ctests"><a class="chip chip-T" href="#T-27">T-27</a></div>
+          </td></tr></table></div>
+
+<h2>3. Цитата → елемент → тест</h2>
+<div class="scroll"><table class="trace"><thead><tr><th>Рядок</th><th>Цитата</th><th>Елементи</th><th>Тести</th></tr></thead><tbody><tr><td class="num">25</td><td><q>listed here is illegal and must return `409`</q></td><td class="chips"><a class="chip chip-ST" href="#ST-02">ST-02</a> <a class="chip chip-ST" href="#ST-03">ST-03</a> <a class="chip chip-ST" href="#ST-04">ST-04</a> <a class="chip chip-ST" href="#ST-05">ST-05</a> <a class="chip chip-ST" href="#ST-06">ST-06</a> <a class="chip chip-ST" href="#ST-08">ST-08</a><span class="role q">?</span> <a class="chip chip-ST" href="#ST-11">ST-11</a><span class="role q">?</span> <a class="chip chip-ST" href="#ST-12">ST-12</a><span class="role q">?</span> <a class="chip chip-ST" href="#ST-13">ST-13</a><span class="role q">?</span> <a class="chip chip-ST" href="#ST-15">ST-15</a> <a class="chip chip-ST" href="#ST-16">ST-16</a> <a class="chip chip-ST" href="#ST-17">ST-17</a> <a class="chip chip-ST" href="#ST-20">ST-20</a> <a class="chip chip-ST" href="#ST-22">ST-22</a> <a class="chip chip-ST" href="#ST-23">ST-23</a> <a class="chip chip-ST" href="#ST-24">ST-24</a> <a class="chip chip-ST" href="#ST-25">ST-25</a> <a class="chip chip-ST" href="#ST-26">ST-26</a> <a class="chip chip-ST" href="#ST-29">ST-29</a> <a class="chip chip-ST" href="#ST-30">ST-30</a> <a class="chip chip-ST" href="#ST-31">ST-31</a> <a class="chip chip-ST" href="#ST-32">ST-32</a> <a class="chip chip-ST" href="#ST-33">ST-33</a> <a class="chip chip-ST" href="#ST-34">ST-34</a> <a class="chip chip-ST" href="#ST-35">ST-35</a> <a class="chip chip-ST" href="#ST-36">ST-36</a> <a class="chip chip-ST" href="#ST-37">ST-37</a> <a class="chip chip-ST" href="#ST-38">ST-38</a> <a class="chip chip-ST" href="#ST-39">ST-39</a> <a class="chip chip-ST" href="#ST-40">ST-40</a> <a class="chip chip-ST" href="#ST-41">ST-41</a> <a class="chip chip-ST" href="#ST-42">ST-42</a> <a class="chip chip-ST" href="#ST-43">ST-43</a> <a class="chip chip-ST" href="#ST-44">ST-44</a> <a class="chip chip-ST" href="#ST-45">ST-45</a> <a class="chip chip-ST" href="#ST-46">ST-46</a> <a class="chip chip-ST" href="#ST-47">ST-47</a> <a class="chip chip-ST" href="#ST-48">ST-48</a> <a class="chip chip-ST" href="#ST-49">ST-49</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-21">T-21</a> <a class="chip chip-T" href="#T-22">T-22</a> <a class="chip chip-T" href="#T-23">T-23</a> <a class="chip chip-T" href="#T-24">T-24</a> <a class="chip chip-T" href="#T-25">T-25</a> <a class="chip chip-T" href="#T-26">T-26</a> <a class="chip chip-T" href="#T-27">T-27</a></td></tr><tr><td class="num">31</td><td><q>| `DRAFT` | submit | `SUBMITTED` → immediately `UNDER_REVIEW` or `REJECTED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-01">ST-01</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-01">T-01</a> <a class="chip chip-T" href="#T-02">T-02</a></td></tr><tr><td class="num">32</td><td><q>| `SUBMITTED` | (gates pass, automatic) | `UNDER_REVIEW` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-09">ST-09</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-01">T-01</a></td></tr><tr><td class="num">33</td><td><q>| `SUBMITTED` | (gates fail, automatic) | `REJECTED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-10">ST-10</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-02">T-02</a></td></tr><tr><td class="num">34</td><td><q>| `UNDER_REVIEW` | approve | `APPROVED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-18">ST-18</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-03">T-03</a></td></tr><tr><td class="num">34</td><td><q>Reviewer-only (`X-Reviewer-Id`)</q></td><td class="chips"><a class="chip chip-EP" href="#EP-03">EP-03</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-04">EP-04</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-03">T-03</a> <a class="chip chip-T" href="#T-04">T-04</a> <a class="chip chip-T" href="#T-11">T-11</a></td></tr><tr><td class="num">35</td><td><q>| `UNDER_REVIEW` | reject | `REJECTED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-19">ST-19</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-04">T-04</a></td></tr><tr><td class="num">35</td><td><q>Reviewer-only; `note` required</q></td><td class="chips"><a class="chip chip-EP" href="#EP-05">EP-05</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-06">EP-06</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-04">T-04</a> <a class="chip chip-T" href="#T-12">T-12</a></td></tr><tr><td class="num">36</td><td><q>| `APPROVED` | complete | `COMPLETED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-27">ST-27</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-05">T-05</a></td></tr><tr><td class="num">36</td><td><q>Maintenance endpoint only — never inferred from elapsed time</q></td><td class="chips"><a class="chip chip-EP" href="#EP-09">EP-09</a> <a class="chip chip-EP" href="#EP-10">EP-10</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-05">T-05</a> <a class="chip chip-T" href="#T-14">T-14</a></td></tr><tr><td class="num">37</td><td><q>| `DRAFT` | cancel | `CANCELLED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-07">ST-07</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-06">T-06</a></td></tr><tr><td class="num">37</td><td><q>| `DRAFT` | cancel | `CANCELLED` | Operator-initiated |</q></td><td class="chips"><a class="chip chip-EP" href="#EP-07">EP-07</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-08">EP-08</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-06">T-06</a> <a class="chip chip-T" href="#T-13">T-13</a></td></tr><tr><td class="num">38</td><td><q>| `SUBMITTED` | cancel | `CANCELLED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-14">ST-14</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-07">T-07</a></td></tr><tr><td class="num">39</td><td><q>| `UNDER_REVIEW` | cancel | `CANCELLED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-21">ST-21</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-08">T-08</a></td></tr><tr><td class="num">40</td><td><q>| `APPROVED` | cancel | `CANCELLED` |</q></td><td class="chips"><a class="chip chip-ST" href="#ST-28">ST-28</a></td>
+      <td class="chips"><a class="chip chip-T" href="#T-09">T-09</a></td></tr><tr><td class="num">44</td><td><q>is illegal and returns `409`.</q></td><td class="chips"><a class="chip chip-ST" href="#ST-02">ST-02</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-03">ST-03</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-04">ST-04</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-05">ST-05</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-06">ST-06</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-08">ST-08</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-ST" href="#ST-11">ST-11</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-ST" href="#ST-12">ST-12</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-ST" href="#ST-13">ST-13</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-ST" href="#ST-15">ST-15</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-16">ST-16</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-17">ST-17</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-20">ST-20</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-22">ST-22</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-23">ST-23</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-24">ST-24</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-25">ST-25</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-26">ST-26</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-29">ST-29</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-30">ST-30</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-31">ST-31</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-32">ST-32</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-33">ST-33</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-34">ST-34</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-35">ST-35</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-36">ST-36</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-37">ST-37</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-38">ST-38</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-39">ST-39</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-40">ST-40</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-41">ST-41</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-42">ST-42</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-43">ST-43</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-44">ST-44</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-45">ST-45</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-46">ST-46</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-47">ST-47</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-48">ST-48</a><span class="role">відповідь</span> <a class="chip chip-ST" href="#ST-49">ST-49</a><span class="role">відповідь</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-21">T-21</a> <a class="chip chip-T" href="#T-22">T-22</a> <a class="chip chip-T" href="#T-23">T-23</a> <a class="chip chip-T" href="#T-24">T-24</a> <a class="chip chip-T" href="#T-25">T-25</a> <a class="chip chip-T" href="#T-26">T-26</a> <a class="chip chip-T" href="#T-27">T-27</a></td></tr><tr><td class="num">56</td><td><q>never inferred from elapsed time</q></td><td class="chips"><a class="chip chip-EP" href="#EP-10">EP-10</a><span class="role">відповідь</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-14">T-14</a></td></tr><tr><td class="num">61</td><td><q>allowed **up to 2 hours before `window_start`**.</q></td><td class="chips"><a class="chip chip-EP" href="#EP-01">EP-01</a><span class="role q">?</span> <a class="chip chip-BV" href="#BV-01">BV-01</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-09">T-09</a> <a class="chip chip-T" href="#T-10">T-10</a></td></tr><tr><td class="num">61</td><td><q>Closer than that, the</q></td><td class="chips"><a class="chip chip-EP" href="#EP-02">EP-02</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-10">T-10</a></td></tr><tr><td class="num">62</td><td><q>cancel endpoint should reject it (`409`</q></td><td class="chips"><a class="chip chip-EP" href="#EP-02">EP-02</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-BV" href="#BV-01">BV-01</a><span class="role">відповідь</span><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-10">T-10</a> <a class="chip chip-T" href="#T-09">T-09</a></td></tr><tr><td class="num">65</td><td><q>Only `APPROVED` and `UNDER_REVIEW` requests</q></td><td class="chips"><a class="chip chip-EP" href="#EP-11">EP-11</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-12">EP-12</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-15">T-15</a> <a class="chip chip-T" href="#T-16">T-16</a></td></tr><tr><td class="num">67</td><td><q>gates. `DRAFT`, `REJECTED`, `CANCELLED` and `COMPLETED` are invisible to it</q></td><td class="chips"><a class="chip chip-EP" href="#EP-13">EP-13</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-14">EP-14</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-15">EP-15</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-16">EP-16</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-17">T-17</a> <a class="chip chip-T" href="#T-18">T-18</a> <a class="chip chip-T" href="#T-19">T-19</a> <a class="chip chip-T" href="#T-20">T-20</a></td></tr><tr><td class="num">68</td><td><q>can still fail at `submit`</q></td><td class="chips"><a class="chip chip-EP" href="#EP-11">EP-11</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-EP" href="#EP-12">EP-12</a><span class="role">відповідь</span><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-15">T-15</a> <a class="chip chip-T" href="#T-16">T-16</a></td></tr></tbody></table></div>
+<h3>Тести</h3>
+<ul class="tests"><li id="T-01"><a class="chip chip-T" href="#T-01">T-01</a> → <a class="chip chip-ST" href="#ST-01">ST-01</a> <a class="chip chip-ST" href="#ST-09">ST-09</a></li><li id="T-02"><a class="chip chip-T" href="#T-02">T-02</a> → <a class="chip chip-ST" href="#ST-01">ST-01</a> <a class="chip chip-ST" href="#ST-10">ST-10</a></li><li id="T-03"><a class="chip chip-T" href="#T-03">T-03</a> → <a class="chip chip-ST" href="#ST-18">ST-18</a> <a class="chip chip-EP" href="#EP-03">EP-03</a></li><li id="T-04"><a class="chip chip-T" href="#T-04">T-04</a> → <a class="chip chip-ST" href="#ST-19">ST-19</a> <a class="chip chip-EP" href="#EP-03">EP-03</a> <a class="chip chip-EP" href="#EP-05">EP-05</a></li><li id="T-05"><a class="chip chip-T" href="#T-05">T-05</a> → <a class="chip chip-ST" href="#ST-27">ST-27</a> <a class="chip chip-EP" href="#EP-09">EP-09</a></li><li id="T-06"><a class="chip chip-T" href="#T-06">T-06</a> → <a class="chip chip-ST" href="#ST-07">ST-07</a> <a class="chip chip-EP" href="#EP-07">EP-07</a></li><li id="T-07"><a class="chip chip-T" href="#T-07">T-07</a> → <a class="chip chip-ST" href="#ST-14">ST-14</a></li><li id="T-08"><a class="chip chip-T" href="#T-08">T-08</a> → <a class="chip chip-ST" href="#ST-21">ST-21</a></li><li id="T-09"><a class="chip chip-T" href="#T-09">T-09</a> → <a class="chip chip-ST" href="#ST-28">ST-28</a> <a class="chip chip-EP" href="#EP-01">EP-01</a> <a class="chip chip-BV" href="#BV-01">BV-01</a></li><li id="T-10"><a class="chip chip-T" href="#T-10">T-10</a> → <a class="chip chip-EP" href="#EP-02">EP-02</a> <a class="chip chip-BV" href="#BV-01">BV-01</a></li><li id="T-11"><a class="chip chip-T" href="#T-11">T-11</a> → <a class="chip chip-EP" href="#EP-04">EP-04</a></li><li id="T-12"><a class="chip chip-T" href="#T-12">T-12</a> → <a class="chip chip-EP" href="#EP-06">EP-06</a></li><li id="T-13"><a class="chip chip-T" href="#T-13">T-13</a> → <a class="chip chip-EP" href="#EP-08">EP-08</a></li><li id="T-14"><a class="chip chip-T" href="#T-14">T-14</a> → <a class="chip chip-EP" href="#EP-10">EP-10</a></li><li id="T-15"><a class="chip chip-T" href="#T-15">T-15</a> → <a class="chip chip-EP" href="#EP-11">EP-11</a></li><li id="T-16"><a class="chip chip-T" href="#T-16">T-16</a> → <a class="chip chip-EP" href="#EP-12">EP-12</a></li><li id="T-17"><a class="chip chip-T" href="#T-17">T-17</a> → <a class="chip chip-EP" href="#EP-13">EP-13</a></li><li id="T-18"><a class="chip chip-T" href="#T-18">T-18</a> → <a class="chip chip-EP" href="#EP-14">EP-14</a></li><li id="T-19"><a class="chip chip-T" href="#T-19">T-19</a> → <a class="chip chip-EP" href="#EP-15">EP-15</a></li><li id="T-20"><a class="chip chip-T" href="#T-20">T-20</a> → <a class="chip chip-EP" href="#EP-16">EP-16</a></li><li id="T-21"><a class="chip chip-T" href="#T-21">T-21</a> → <a class="chip chip-ST" href="#ST-02">ST-02</a> <a class="chip chip-ST" href="#ST-03">ST-03</a> <a class="chip chip-ST" href="#ST-04">ST-04</a> <a class="chip chip-ST" href="#ST-05">ST-05</a> <a class="chip chip-ST" href="#ST-06">ST-06</a></li><li id="T-22"><a class="chip chip-T" href="#T-22">T-22</a> → <a class="chip chip-ST" href="#ST-08">ST-08</a> <a class="chip chip-ST" href="#ST-11">ST-11</a> <a class="chip chip-ST" href="#ST-12">ST-12</a> <a class="chip chip-ST" href="#ST-13">ST-13</a></li><li id="T-23"><a class="chip chip-T" href="#T-23">T-23</a> → <a class="chip chip-ST" href="#ST-15">ST-15</a> <a class="chip chip-ST" href="#ST-16">ST-16</a> <a class="chip chip-ST" href="#ST-17">ST-17</a> <a class="chip chip-ST" href="#ST-20">ST-20</a></li><li id="T-24"><a class="chip chip-T" href="#T-24">T-24</a> → <a class="chip chip-ST" href="#ST-22">ST-22</a> <a class="chip chip-ST" href="#ST-23">ST-23</a> <a class="chip chip-ST" href="#ST-24">ST-24</a> <a class="chip chip-ST" href="#ST-25">ST-25</a> <a class="chip chip-ST" href="#ST-26">ST-26</a></li><li id="T-25"><a class="chip chip-T" href="#T-25">T-25</a> → <a class="chip chip-ST" href="#ST-29">ST-29</a> <a class="chip chip-ST" href="#ST-30">ST-30</a> <a class="chip chip-ST" href="#ST-31">ST-31</a> <a class="chip chip-ST" href="#ST-32">ST-32</a> <a class="chip chip-ST" href="#ST-33">ST-33</a> <a class="chip chip-ST" href="#ST-34">ST-34</a> <a class="chip chip-ST" href="#ST-35">ST-35</a></li><li id="T-26"><a class="chip chip-T" href="#T-26">T-26</a> → <a class="chip chip-ST" href="#ST-36">ST-36</a> <a class="chip chip-ST" href="#ST-37">ST-37</a> <a class="chip chip-ST" href="#ST-38">ST-38</a> <a class="chip chip-ST" href="#ST-39">ST-39</a> <a class="chip chip-ST" href="#ST-40">ST-40</a> <a class="chip chip-ST" href="#ST-41">ST-41</a> <a class="chip chip-ST" href="#ST-42">ST-42</a></li><li id="T-27"><a class="chip chip-T" href="#T-27">T-27</a> → <a class="chip chip-ST" href="#ST-43">ST-43</a> <a class="chip chip-ST" href="#ST-44">ST-44</a> <a class="chip chip-ST" href="#ST-45">ST-45</a> <a class="chip chip-ST" href="#ST-46">ST-46</a> <a class="chip chip-ST" href="#ST-47">ST-47</a> <a class="chip chip-ST" href="#ST-48">ST-48</a> <a class="chip chip-ST" href="#ST-49">ST-49</a></li></ul>
+
+<h2>4. Unknowns</h2>
+<ol class="unknowns"><li id="U-01"><b>U-01</b> Чи дозволено cancel заявки APPROVED рівно за 2 години до window_start? «up to 2 hours before» (рядки 40, 61) не каже, чи межа включна.<div class="meta">зачіпає: <a class="chip chip-BV" href="#BV-01">BV-01</a></div></li><li id="U-02"><b>U-02</b> З якою точністю рахується дедлайн cancel (години, хвилини, секунди — напр. 1 год 59 хв) і відносно якого часу (сервер, UTC) він порівнюється з window_start?<div class="meta">зачіпає: <a class="chip chip-BV" href="#BV-01">BV-01</a> <a class="chip chip-EP" href="#EP-01">EP-01</a> <a class="chip chip-EP" href="#EP-02">EP-02</a></div></li><li id="U-03"><b>U-03</b> Що повертає система, коли approve або reject викликає не reviewer (без `X-Reviewer-Id`)? Рядки 34–35 кажуть лише «Reviewer-only».<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-04">EP-04</a></div></li><li id="U-04"><b>U-04</b> Що повертає система на reject без `note`? Рядок 35 каже лише «`note` required».<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-06">EP-06</a></div></li><li id="U-05"><b>U-05</b> Як система визначає, що cancel ініціював саме operator, і що повертає, якщо cancel викликає хтось інший? Рядки 37–40 кажуть лише «Operator-initiated».<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-08">EP-08</a></div></li><li id="U-06"><b>U-06</b> Як тестувати переходи зі стану `SUBMITTED`? Рядки 31 і 51 кажуть, що його ніколи не видно («caller never observes `SUBMITTED` at rest»), а рядок 38 дозволяє cancel «in the narrow window before gates resolve it». Чи це вікно досяжне ззовні, і якщо ні — як перевіряти клітинки цього стану?<div class="meta">зачіпає: <a class="chip chip-ST" href="#ST-08">ST-08</a> <a class="chip chip-ST" href="#ST-09">ST-09</a> <a class="chip chip-ST" href="#ST-10">ST-10</a> <a class="chip chip-ST" href="#ST-11">ST-11</a> <a class="chip chip-ST" href="#ST-12">ST-12</a> <a class="chip chip-ST" href="#ST-13">ST-13</a> <a class="chip chip-ST" href="#ST-14">ST-14</a></div></li><li id="U-07"><b>U-07</b> Overlap check: яким gate падає submit — `AIRCRAFT` чи `TIME_WINDOW` (рядок 66 називає обидва)? Чи враховуються заявки в `SUBMITTED` (їх немає ні серед counted, ні серед invisible)? Що саме вважається перетином — визначення в цьому файлі немає.<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-11">EP-11</a> <a class="chip chip-EP" href="#EP-12">EP-12</a> <a class="chip chip-EP" href="#EP-13">EP-13</a> <a class="chip chip-EP" href="#EP-14">EP-14</a> <a class="chip chip-EP" href="#EP-15">EP-15</a> <a class="chip chip-EP" href="#EP-16">EP-16</a></div></li><li id="U-08"><b>U-08</b> Що відбувається з порожніми або некоректними значеннями — порожній `X-Reviewer-Id`, порожній рядок у `note`, невідомий actor? Файл про такі значення мовчить.<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-03">EP-03</a> <a class="chip chip-EP" href="#EP-04">EP-04</a> <a class="chip chip-EP" href="#EP-05">EP-05</a> <a class="chip chip-EP" href="#EP-06">EP-06</a> <a class="chip chip-EP" href="#EP-07">EP-07</a> <a class="chip chip-EP" href="#EP-08">EP-08</a></div></li><li id="U-09"><b>U-09</b> Що повертає submit: рядок 31 каже, що заявка проходить через `SUBMITTED` одразу в `UNDER_REVIEW` або `REJECTED`. Чи відповідь submit містить уже кінцевий стан і `failing_gate`/`rejection_reason` (рядок 33)?<div class="meta">зачіпає: <a class="chip chip-ST" href="#ST-01">ST-01</a> <a class="chip chip-ST" href="#ST-09">ST-09</a> <a class="chip chip-ST" href="#ST-10">ST-10</a></div></li></ol>
+</main>
+</body>
+</html>

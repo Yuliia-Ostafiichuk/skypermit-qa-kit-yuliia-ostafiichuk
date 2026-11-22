@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06-business-rules · покриття</title>
+<style>
+:root{--bg:#fbfbf9;--fg:#1d1d1b;--muted:#6b6b66;--line:#d9d8d2;--card:#ffffff;
+--ok:#2f7d4f;--ok-bg:#dcefe2;--bad:#b23b3b;--bad-bg:#f6dede;--unk:#a66a00;--unk-bg:#fbebc8;
+--ep:#2f6fb0;--bv:#7a4bb0;--st:#2c7f86;--t:#555;--u:#a66a00}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17181a;--fg:#e9e8e3;--muted:#9a9a94;--line:#34363a;--card:#1f2124;
+--ok:#6cc78f;--ok-bg:#1e3a29;--bad:#ef8a8a;--bad-bg:#432323;--unk:#f0b851;--unk-bg:#40321a;--ep:#7fb2ea;--bv:#b996e6;--st:#6cc3ca;--t:#bbb;--u:#f0b851}}
+:root[data-theme="dark"]{--bg:#17181a;--fg:#e9e8e3;--muted:#9a9a94;--line:#34363a;--card:#1f2124;
+--ok:#6cc78f;--ok-bg:#1e3a29;--bad:#ef8a8a;--bad-bg:#432323;--unk:#f0b851;--unk-bg:#40321a;--ep:#7fb2ea;--bv:#b996e6;--st:#6cc3ca;--t:#bbb;--u:#f0b851}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:15px;margin:20px 0 8px}
+.sub{color:var(--muted);font-size:13px;word-break:break-all}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:92px}
+.stat b{display:block;font-size:20px}.stat span{color:var(--muted);font-size:12px}
+.problems{background:var(--bad-bg);border-radius:8px;padding:10px 14px 10px 32px;margin:12px 0}
+.okmsg{background:var(--ok-bg);border-radius:8px;padding:10px 14px;margin:12px 0}
+.param{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:14px 0}
+.param h3{margin-top:4px}
+.chart svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font-size:12px}
+.lab{fill:var(--muted)!important;font-size:11px!important}
+.guide{stroke:var(--line);stroke-dasharray:3 3}
+.axis{stroke:var(--fg);stroke-width:1.5}
+.ep rect{stroke-width:1.5}
+.ep.ok rect{fill:var(--ok-bg);stroke:var(--ok)}.ep.bad rect{fill:var(--bad-bg);stroke:var(--bad)}
+.ep.ok .arrow{stroke:var(--ok);fill:none;stroke-width:2}.ep.bad .arrow{stroke:var(--bad);fill:none;stroke-width:2}
+.rep{fill:var(--fg);opacity:.7}
+.tick{stroke-width:2}.tick.ok{stroke:var(--ok)}.tick.bad{stroke:var(--bad)}.tick.unk{stroke:var(--unk)}
+.bmark{stroke:var(--fg);stroke-width:2}.bmark.incl{fill:var(--fg)}.bmark.excl{fill:var(--card)}
+.bmark.unkn{fill:var(--unk-bg);stroke:var(--unk);stroke-dasharray:2 2}
+text.q{fill:var(--unk)!important;font-weight:700;font-size:10px!important}
+.blab{font-size:11px!important}
+.zooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:10px}
+.zcard{margin:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.zcard figcaption{font-size:13px}
+.zoom{width:100%;height:auto;display:block;margin:4px 0}
+.pt{stroke-width:2}.pt.ok{fill:var(--ok-bg);stroke:var(--ok)}.pt.bad{fill:var(--bad-bg);stroke:var(--bad)}.pt.unk{fill:var(--unk-bg);stroke:var(--unk)}
+.plab{font-size:12px!important;font-weight:600}
+.pexp{font-size:11px!important}.pexp.ok{fill:var(--ok)!important}.pexp.bad{fill:var(--bad)!important}.pexp.unk{fill:var(--unk)!important}
+.vals{list-style:none;margin:4px 0;padding:0;font-size:13px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}.dot.unk{background:var(--unk)}
+.incl.unk{color:var(--unk);font-weight:600}
+.meta{color:var(--muted);font-size:12px;margin-top:4px}
+.note,.empty{color:var(--muted);font-size:13px}
+.warn{color:var(--bad);font-size:12px;font-weight:600}
+.chip{display:inline-block;font:600 11px/1.6 ui-monospace,Menlo,monospace;padding:0 6px;border-radius:10px;text-decoration:none;border:1px solid currentColor;white-space:nowrap;margin:1px 0}
+.chip-EP{color:var(--ep)}.chip-BV{color:var(--bv)}.chip-ST{color:var(--st)}.chip-T{color:var(--t)}.chip-U{color:var(--u)}.chip-X{color:var(--bad)}
+.role{font-size:10px;color:var(--muted);margin:0 4px 0 2px}.role.q{color:var(--unk);font-weight:700}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+thead th,.st tr:first-child th{background:var(--card);position:sticky;top:0}
+.st th{white-space:nowrap}.st .corner{color:var(--muted);font-weight:400}
+.cell{min-width:96px}
+.cell.legal{background:var(--ok-bg)}.cell.illegal{background:var(--bad-bg)}.cell.unknown{background:var(--unk-bg)}
+.cell.missing{color:var(--bad);text-align:center;font-weight:700;outline:2px dashed var(--bad);outline-offset:-3px}
+.cell.uncovered{outline:2px dashed var(--bad);outline-offset:-3px}
+.cbody{font-weight:600}.cid{font-size:11px;color:var(--muted)}
+.legend{font-size:13px;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px 0 10px;vertical-align:middle;border:1px solid var(--line)}
+.sw.legal{background:var(--ok-bg)}.sw.illegal{background:var(--bad-bg)}.sw.unknown{background:var(--unk-bg)}
+td.num{font-variant-numeric:tabular-nums;color:var(--muted);width:48px}
+td q{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-word}
+td.chips{max-width:320px}
+.tests{columns:2 260px;font-size:13px;padding-left:18px}
+.unknowns li{margin-bottom:10px}
+:target{scroll-margin-top:16px;box-shadow:0 0 0 3px var(--unk)}
+@media (max-width:600px){td.chips{max-width:none}.trace td:nth-child(1){width:auto}}
+</style>
+</head>
+<body>
+<main>
+<h1>Покриття тест-дизайну: 06-business-rules</h1>
+<div class="sub">specs/06-business-rules.md · focus: Duration (§1.4 TIME_WINDOW)</div>
+<div class="stats">
+  <div class="stat"><b>5</b><span>EP</span></div>
+  <div class="stat"><b>3</b><span>BV</span></div>
+  <div class="stat"><b>0</b><span>ST-клітинок</span></div>
+  <div class="stat"><b>7</b><span>тестів</span></div>
+  <div class="stat"><b>8/8</b><span>елементів покрито</span></div>
+  <div class="stat"><b>5</b><span>unknowns</span></div>
+</div>
+<div class="okmsg">Структурних проблем не знайдено: кожен EP, BV і ST покритий тестом, усі посилання існують.</div>
+
+<h2>1. Числові параметри: класи, межі, точки BV</h2>
+<p class="note">Смуги — класи EP (зелена valid, червона invalid, ромб — representative). На осі: ● включна межа, ○ не включна, ? — включність невідома. Під лінією — кожна межа крупно з трьома точками BV.</p>
+<section class="param">
+    <h3>тривалість вікна (window_end − window_start), хв</h3>
+    <div class="chart"><svg viewBox="0 0 760 162" role="img" aria-label="Числова лінія: тривалість вікна (window_end − window_start), хв"><line class="guide" x1="167.16894477856755" x2="167.16894477856755" y1="6" y2="106"><title>BV-01</title></line><line class="guide" x1="569.4379442318207" x2="569.4379442318207" y1="6" y2="106"><title>BV-02</title></line><a href="#EP-01"><g class="ep ok" id="EP-01"><title>EP-01 · 15–240 хв · valid</title><rect x="167.16894477856755" y="10" width="402.2689994532531" height="18" rx="4"/><path class="rep" d="M354.89447785675236 12 l6 7 l-6 7 l-6 -7 z"><title>representative: 120 хв</title></path></g></a><text class="lab" x="78" y="23" text-anchor="end">EP-01</text><a href="#EP-02"><g class="ep bad" id="EP-02"><title>EP-02 · менше 15 хв · invalid</title><rect x="86" y="36" width="81.16894477856755" height="18" rx="4"/><path d="M94 38 L86 45 L94 52" class="arrow"/><path class="rep" d="M149.29032258064518 38 l6 7 l-6 7 l-6 -7 z"><title>representative: 5 хв</title></path></g></a><text class="lab" x="78" y="49" text-anchor="end">EP-02</text><a href="#EP-03"><g class="ep bad" id="EP-03"><title>EP-03 · більше 240 хв · invalid</title><rect x="569.4379442318207" y="62" width="170.56205576817933" height="18" rx="4"/><path d="M732 64 L740 71 L732 78" class="arrow"/><path class="rep" d="M676.7096774193549 64 l6 7 l-6 7 l-6 -7 z"><title>representative: 300 хв</title></path></g></a><text class="lab" x="78" y="75" text-anchor="end">EP-03</text><line class="axis" x1="86" x2="740" y1="106" y2="106"/><line class="tick bad" x1="165.3810825587753" x2="165.3810825587753" y1="100" y2="112"><title>BV-01: 14 хв → invalid</title></line><line class="tick ok" x1="167.16894477856755" x2="167.16894477856755" y1="100" y2="112"><title>BV-01: 15 хв → valid</title></line><line class="tick ok" x1="168.95680699835975" x2="168.95680699835975" y1="100" y2="112"><title>BV-01: 16 хв → valid</title></line><line class="tick ok" x1="567.6500820120284" x2="567.6500820120284" y1="100" y2="112"><title>BV-02: 239 хв → valid</title></line><line class="tick ok" x1="569.4379442318207" x2="569.4379442318207" y1="100" y2="112"><title>BV-02: 240 хв → valid</title></line><line class="tick bad" x1="571.2258064516129" x2="571.2258064516129" y1="100" y2="112"><title>BV-02: 241 хв → invalid</title></line><a href="#BV-01"><circle class="bmark incl" cx="167.16894477856755" cy="106" r="6"><title>BV-01 · межа 15 хв · включна</title></circle></a><text class="blab" x="167.16894477856755" y="130" text-anchor="middle">15 хв · BV-01</text><a href="#BV-02"><circle class="bmark incl" cx="569.4379442318207" cy="106" r="6"><title>BV-02 · межа 240 хв · включна</title></circle></a><text class="blab" x="569.4379442318207" y="130" text-anchor="middle">240 хв · BV-02</text><text class="lab" x="78" y="110" text-anchor="end">хв</text></svg></div>
+    
+    <div class="zooms"><figure class="zcard" id="BV-01">
+        <figcaption><b>BV-01</b> · межа <b>15 хв</b> · крок 1 хв · <span class="incl ">включна</span></figcaption>
+        <svg viewBox="0 0 230 74" class="zoom" aria-hidden="true"><line class="axis" x1="18" x2="212" y1="30" y2="30"/><line class="guide" x1="115" x2="115" y1="6" y2="30"/><circle class="pt bad" cx="50.33333333333333" cy="30" r="7"><title>14 хв → invalid</title></circle><text class="plab" x="50.33333333333333" y="54" text-anchor="middle">14</text><text class="pexp bad" x="50.33333333333333" y="68" text-anchor="middle">invalid</text><circle class="pt ok" cx="115" cy="30" r="7"><title>15 хв → valid</title></circle><text class="plab" x="115" y="54" text-anchor="middle">15</text><text class="pexp ok" x="115" y="68" text-anchor="middle">valid</text><circle class="pt ok" cx="179.66666666666669" cy="30" r="7"><title>16 хв → valid</title></circle><text class="plab" x="179.66666666666669" y="54" text-anchor="middle">16</text><text class="pexp ok" x="179.66666666666669" y="68" text-anchor="middle">valid</text></svg>
+        <ul class="vals"><li><span class="dot bad"></span>14 хв → invalid</li><li><span class="dot ok"></span>15 хв → valid</li><li><span class="dot ok"></span>16 хв → valid</li></ul>
+        <div class="meta">тести: <a class="chip chip-T" href="#T-02">T-02</a> · питання: <a class="chip chip-U" href="#U-01">U-01</a> <a class="chip chip-U" href="#U-04">U-04</a> <a class="chip chip-U" href="#U-05">U-05</a></div>
+      </figure><figure class="zcard" id="BV-02">
+        <figcaption><b>BV-02</b> · межа <b>240 хв</b> · крок 1 хв · <span class="incl ">включна</span></figcaption>
+        <svg viewBox="0 0 230 74" class="zoom" aria-hidden="true"><line class="axis" x1="18" x2="212" y1="30" y2="30"/><line class="guide" x1="115" x2="115" y1="6" y2="30"/><circle class="pt ok" cx="50.33333333333333" cy="30" r="7"><title>239 хв → valid</title></circle><text class="plab" x="50.33333333333333" y="54" text-anchor="middle">239</text><text class="pexp ok" x="50.33333333333333" y="68" text-anchor="middle">valid</text><circle class="pt ok" cx="115" cy="30" r="7"><title>240 хв → valid</title></circle><text class="plab" x="115" y="54" text-anchor="middle">240</text><text class="pexp ok" x="115" y="68" text-anchor="middle">valid</text><circle class="pt bad" cx="179.66666666666669" cy="30" r="7"><title>241 хв → invalid</title></circle><text class="plab" x="179.66666666666669" y="54" text-anchor="middle">241</text><text class="pexp bad" x="179.66666666666669" y="68" text-anchor="middle">invalid</text></svg>
+        <ul class="vals"><li><span class="dot ok"></span>239 хв → valid</li><li><span class="dot ok"></span>240 хв → valid</li><li><span class="dot bad"></span>241 хв → invalid</li></ul>
+        <div class="meta">тести: <a class="chip chip-T" href="#T-03">T-03</a> · питання: <a class="chip chip-U" href="#U-01">U-01</a> <a class="chip chip-U" href="#U-04">U-04</a> <a class="chip chip-U" href="#U-05">U-05</a></div>
+      </figure></div>
+  </section><section class="param">
+    <h3>порядок window_end відносно window_start (різниця window_end − window_start), хв</h3>
+    <div class="chart"><svg viewBox="0 0 760 84" role="img" aria-label="Числова лінія: порядок window_end відносно window_start (різниця window_end − window_start), хв"><line class="guide" x1="413" x2="413" y1="6" y2="28"><title>BV-03</title></line><line class="axis" x1="86" x2="740" y1="28" y2="28"/><line class="tick bad" x1="149.29032258064515" x2="149.29032258064515" y1="22" y2="34"><title>BV-03: −1 хв (window_end на 1 хв раніше за window_start) → invalid</title></line><line class="tick bad" x1="413" x2="413" y1="22" y2="34"><title>BV-03: 0 хв (window_end = window_start) → invalid</title></line><line class="tick bad" x1="676.7096774193549" x2="676.7096774193549" y1="22" y2="34"><title>BV-03: +1 хв (window_end на 1 хв після window_start; порядок дотримано, але тривалість 1 хв &lt; 15 хв — EP-02) → invalid</title></line><a href="#BV-03"><circle class="bmark excl" cx="413" cy="28" r="6"><title>BV-03 · межа 0 хв (window_end = window_start) · не включна</title></circle></a><text class="blab" x="413" y="52" text-anchor="middle">0 хв (window_end = window_start) · BV-03</text><text class="lab" x="78" y="32" text-anchor="end">хв (window_end = window_start)</text></svg></div>
+    
+    <div class="zooms"><figure class="zcard" id="BV-03">
+        <figcaption><b>BV-03</b> · межа <b>0 хв (window_end = window_start)</b> · крок 1 хв · <span class="incl ">не включна</span></figcaption>
+        <svg viewBox="0 0 230 74" class="zoom" aria-hidden="true"><line class="axis" x1="18" x2="212" y1="30" y2="30"/><line class="guide" x1="115" x2="115" y1="6" y2="30"/><circle class="pt bad" cx="50.33333333333333" cy="30" r="7"><title>−1 хв (window_end на 1 хв раніше за window_start) → invalid</title></circle><text class="plab" x="50.33333333333333" y="54" text-anchor="middle">-1</text><text class="pexp bad" x="50.33333333333333" y="68" text-anchor="middle">invalid</text><circle class="pt bad" cx="115" cy="30" r="7"><title>0 хв (window_end = window_start) → invalid</title></circle><text class="plab" x="115" y="54" text-anchor="middle">0</text><text class="pexp bad" x="115" y="68" text-anchor="middle">invalid</text><circle class="pt bad" cx="179.66666666666669" cy="30" r="7"><title>+1 хв (window_end на 1 хв після window_start; порядок дотримано, але тривалість 1 хв &lt; 15 хв — EP-02) → invalid</title></circle><text class="plab" x="179.66666666666669" y="54" text-anchor="middle">1</text><text class="pexp bad" x="179.66666666666669" y="68" text-anchor="middle">invalid</text></svg>
+        <ul class="vals"><li><span class="dot bad"></span>−1 хв (window_end на 1 хв раніше за window_start) → invalid</li><li><span class="dot bad"></span>0 хв (window_end = window_start) → invalid</li><li><span class="dot bad"></span>+1 хв (window_end на 1 хв після window_start; порядок дотримано, але тривалість 1 хв &lt; 15 хв — EP-02) → invalid</li></ul>
+        <div class="meta">тести: <a class="chip chip-T" href="#T-07">T-07</a> · питання: <a class="chip chip-U" href="#U-01">U-01</a> <a class="chip chip-U" href="#U-02">U-02</a></div>
+      </figure></div>
+  </section>
+<h3>Інші класи еквівалентності (нечислові параметри)</h3>
+     <table class="grid"><thead><tr><th>Id</th><th>Параметр</th><th>Клас</th><th>Valid</th><th>Representative</th><th>Тести</th></tr></thead><tbody>
+     <tr id="EP-04"><td><a class="chip chip-EP" href="#EP-04">EP-04</a></td><td>порядок window_end відносно window_start</td><td>window_end строго після window_start</td>
+         <td><span class="dot ok"></span>valid</td><td>window_end = window_start + 120 хв</td>
+         <td><a class="chip chip-T" href="#T-01">T-01</a></td></tr><tr id="EP-05"><td><a class="chip chip-EP" href="#EP-05">EP-05</a></td><td>порядок window_end відносно window_start</td><td>window_end не пізніше window_start</td>
+         <td><span class="dot bad"></span>invalid</td><td>window_end = window_start − 60 хв</td>
+         <td><a class="chip chip-T" href="#T-06">T-06</a></td></tr>
+     </tbody></table>
+
+<h2>2. Таблиця стан × дія</h2>
+<p class="empty">Не застосовується: Правило Duration (рядок 97) не описує станів і переходів. Статуси запитів у файлі згадано лише в правилі No overlap (рядок 99) і в дедлайні скасування (рядок 170), а таблиці переходів файл не містить.</p>
+
+<h2>3. Цитата → елемент → тест</h2>
+<div class="scroll"><table class="trace"><thead><tr><th>Рядок</th><th>Цитата</th><th>Елементи</th><th>Тести</th></tr></thead><tbody><tr><td class="num">97</td><td><q>`window_end` strictly after `window_start`.</q></td><td class="chips"><a class="chip chip-EP" href="#EP-04">EP-04</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-05">EP-05</a><span class="role q">?</span> <a class="chip chip-BV" href="#BV-03">BV-03</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-01">T-01</a> <a class="chip chip-T" href="#T-06">T-06</a> <a class="chip chip-T" href="#T-07">T-07</a></td></tr><tr><td class="num">97</td><td><q>15–240 minutes, inclusive at both ends.</q></td><td class="chips"><a class="chip chip-EP" href="#EP-01">EP-01</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-02">EP-02</a><span class="role q">?</span> <a class="chip chip-EP" href="#EP-03">EP-03</a><span class="role q">?</span> <a class="chip chip-BV" href="#BV-01">BV-01</a><span class="role q">?</span> <a class="chip chip-BV" href="#BV-02">BV-02</a><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-01">T-01</a> <a class="chip chip-T" href="#T-04">T-04</a> <a class="chip chip-T" href="#T-05">T-05</a> <a class="chip chip-T" href="#T-02">T-02</a> <a class="chip chip-T" href="#T-03">T-03</a></td></tr><tr><td class="num">190</td><td><q>| `TIME_WINDOW` | Duration out of range | `TSD-4 §3` |</q></td><td class="chips"><a class="chip chip-EP" href="#EP-02">EP-02</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-EP" href="#EP-03">EP-03</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-BV" href="#BV-01">BV-01</a><span class="role">відповідь</span><span class="role q">?</span> <a class="chip chip-BV" href="#BV-02">BV-02</a><span class="role">відповідь</span><span class="role q">?</span></td>
+      <td class="chips"><a class="chip chip-T" href="#T-04">T-04</a> <a class="chip chip-T" href="#T-05">T-05</a> <a class="chip chip-T" href="#T-02">T-02</a> <a class="chip chip-T" href="#T-03">T-03</a></td></tr></tbody></table></div>
+<h3>Тести</h3>
+<ul class="tests"><li id="T-01"><a class="chip chip-T" href="#T-01">T-01</a> → <a class="chip chip-EP" href="#EP-01">EP-01</a> <a class="chip chip-EP" href="#EP-04">EP-04</a></li><li id="T-02"><a class="chip chip-T" href="#T-02">T-02</a> → <a class="chip chip-BV" href="#BV-01">BV-01</a></li><li id="T-03"><a class="chip chip-T" href="#T-03">T-03</a> → <a class="chip chip-BV" href="#BV-02">BV-02</a></li><li id="T-04"><a class="chip chip-T" href="#T-04">T-04</a> → <a class="chip chip-EP" href="#EP-02">EP-02</a></li><li id="T-05"><a class="chip chip-T" href="#T-05">T-05</a> → <a class="chip chip-EP" href="#EP-03">EP-03</a></li><li id="T-06"><a class="chip chip-T" href="#T-06">T-06</a> → <a class="chip chip-EP" href="#EP-05">EP-05</a></li><li id="T-07"><a class="chip chip-T" href="#T-07">T-07</a> → <a class="chip chip-BV" href="#BV-03">BV-03</a></li></ul>
+
+<h2>4. Unknowns</h2>
+<ol class="unknowns"><li id="U-01"><b>U-01</b> З якою точністю рахується тривалість, якщо window_start/window_end містять секунди чи мілісекунди: як оцінюються, наприклад, 14 хв 59 с або 240 хв 1 с (порівняння до секунди, округлення, відкидання)?<div class="meta">зачіпає: <a class="chip chip-BV" href="#BV-01">BV-01</a> <a class="chip chip-BV" href="#BV-02">BV-02</a> <a class="chip chip-BV" href="#BV-03">BV-03</a></div></li><li id="U-02"><b>U-02</b> Що повертає система, коли window_end дорівнює window_start або раніший за нього? У таблиці rule_reference (рядки 180–194) є лише «Duration out of range» → `TSD-4 §3`; чи це та сама відповідь, чи окрема перевірка з іншим rule_reference / до запуску gates?<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-05">EP-05</a> <a class="chip chip-BV" href="#BV-03">BV-03</a></div></li><li id="U-03"><b>U-03</b> Що відбувається, коли window_start або window_end відсутні, null чи в неправильному форматі? Файл про такі значення мовчить.<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-01">EP-01</a> <a class="chip chip-EP" href="#EP-02">EP-02</a> <a class="chip chip-EP" href="#EP-03">EP-03</a> <a class="chip chip-EP" href="#EP-04">EP-04</a> <a class="chip chip-EP" href="#EP-05">EP-05</a></div></li><li id="U-04"><b>U-04</b> Файл називає для порушення тривалості лише gate і rule_reference (рядок 190), а про `422` каже загально (рядок 30: «`failing_gate` in a `422` response»). Чи порушення Duration завжди дає HTTP 422 з `failing_gate` = `TIME_WINDOW`, і на якому кроці перевіряється — при створенні чернетки чи при submit?<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-02">EP-02</a> <a class="chip chip-EP" href="#EP-03">EP-03</a> <a class="chip chip-BV" href="#BV-01">BV-01</a> <a class="chip chip-BV" href="#BV-02">BV-02</a></div></li><li id="U-05"><b>U-05</b> Усередині gate `TIME_WINDOW` п&#39;ять умов (рядки 95–99). Якщо вікно одночасно порушує тривалість і, наприклад, lead time або curfew — який rule_reference повертається? Порядок перевірки умов усередині gate файл не задає (рядок 26 говорить лише про порядок gates).<div class="meta">зачіпає: <a class="chip chip-EP" href="#EP-02">EP-02</a> <a class="chip chip-EP" href="#EP-03">EP-03</a> <a class="chip chip-BV" href="#BV-01">BV-01</a> <a class="chip chip-BV" href="#BV-02">BV-02</a></div></li></ol>
+</main>
+</body>
+</html>
