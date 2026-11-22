@@ -1,0 +1,15 @@
+{
+  "eval_name": "request-lifecycle-st",
+  "prompt": "Потрібен тест-дизайн життєвого циклу заявки з 02-state-machine.md — EP, BV і повна таблиця стан × дія. Результат — json поруч зі специфікацією.",
+  "assertions": [
+    "02-state-machine.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+    "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+    "states lists all seven states DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, CANCELLED, COMPLETED, and actions include submit, approve, reject, complete and cancel",
+    "The matrix has exactly len(states) × len(actions) cells with every (from, action) pair exactly once",
+    "The legal cells are exactly the transitions listed in the spec table (DRAFT submit, UNDER_REVIEW approve/reject, APPROVED complete, DRAFT/SUBMITTED/UNDER_REVIEW/APPROVED cancel, plus SUBMITTED automatic gate pass/fail if those are modelled as actions), each with the correct target state",
+    "Every non-listed pair is illegal with to null, including every action from REJECTED, CANCELLED and COMPLETED and submit from UNDER_REVIEW; none is left unknown",
+    "Illegal cells carry response 409 with a verbatim quote, or 409 is otherwise recorded with a quote — never without one",
+    "The 2-hour APPROVED cancellation deadline is a boundary value with three values whose boundary value has expected unknown (inclusive null) and a matching question in unknowns",
+    "Every EP, BV and ST id appears in the covers list of at least one test, and every id in covers/affects exists"
+  ]
+}

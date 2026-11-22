@@ -1,0 +1,15 @@
+{
+  "eval_name": "flight-duration-bv",
+  "prompt": "Зроби тест-дизайн для тривалості польоту (Duration у TIME_WINDOW) з 06-business-rules.md: класи еквівалентності, граничні значення і переходи станів, якщо вони там є. Результат — json поруч зі специфікацією.",
+  "assertions": [
+    "06-business-rules.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+    "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+    "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+    "There is a boundary at 15 minutes with values 14/15/16 minutes expected invalid/valid/valid, inclusive true, step 1 minute",
+    "There is a boundary at 240 minutes with values 239/240/241 minutes expected valid/valid/invalid, inclusive true, step 1 minute",
+    "Equivalence classes include below 15 minutes (invalid), 15–240 minutes (valid) and above 240 minutes (invalid), each quoting spec line 97",
+    "state_transitions is {not_applicable: ...} because the focus is a duration rule, not a state machine",
+    "Every EP and BV id appears in the covers list of at least one test, and every id in covers/affects exists",
+    "No equivalence class is defined for empty, null or wrong-type values; if such cases are raised, they appear only as a question in unknowns"
+  ]
+}

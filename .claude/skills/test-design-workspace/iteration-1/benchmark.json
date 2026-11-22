@@ -1,0 +1,465 @@
+{
+  "metadata": {
+    "skill_name": "test-design",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-22T11:48:13Z",
+    "evals_run": [
+      "bike-rental-gaps",
+      "flight-duration-bv",
+      "request-lifecycle-st"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "bike-rental-gaps",
+      "eval_name": "bike-rental-gaps",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 10,
+        "failed": 0,
+        "total": 10,
+        "time_seconds": 83.1,
+        "tokens": 53381,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "bike-rental.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+          "passed": true,
+          "evidence": "file and all keys present"
+        },
+        {
+          "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+          "passed": true,
+          "evidence": "31/31 verbatim; bad: []"
+        },
+        {
+          "text": "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+          "passed": true,
+          "evidence": "7 BV; bad: []"
+        },
+        {
+          "text": "The age boundary at 16 years is inclusive (from 'at least') with 15/16/17 years expected invalid/valid/valid",
+          "passed": true,
+          "evidence": "BV-01: [(15.0, 'invalid'), (16.0, 'valid'), (17.0, 'valid')], inclusive=True, step=1 рік"
+        },
+        {
+          "text": "Both rental-duration boundaries (30 and 480 minutes) have inclusive null and expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+          "passed": true,
+          "evidence": "BV-04: [('29 хвилин', 'invalid'), ('30 хвилин', 'unknown'), ('31 хвилина', 'valid')], inclusive=None, unknowns=['U-02', 'U-06', 'U-13'] | BV-05: [('479 хвилин', 'valid'), ('480 хвилин', 'unknown'), ('481 хвилина', 'invalid')], inclusive=None, unknowns=['U-02', 'U-06', 'U-13']"
+        },
+        {
+          "text": "The PIN length boundaries (4 and 6 digits) have expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+          "passed": true,
+          "evidence": "BV-02: [('3 цифри', 'invalid'), ('4 цифри', 'unknown'), ('5 цифр', 'valid')], inclusive=None, unknowns=['U-01', 'U-05'] | BV-03: [('5 цифр', 'valid'), ('6 цифр', 'unknown'), ('7 цифр', 'invalid')], inclusive=None, unknowns=['U-01', 'U-05']"
+        },
+        {
+          "text": "No element has a response field (the spec names no error responses), and unknowns contains a question about what the system returns on violation",
+          "passed": true,
+          "evidence": "response fields present=False; question=U-04"
+        },
+        {
+          "text": "The state matrix covers all 4 states × all actions (unlock, timeout, return); legal cells are exactly RESERVED-unlock→ACTIVE, RESERVED-timeout→EXPIRED, ACTIVE-return→RETURNED; unlisted pairs from non-final states (e.g. ACTIVE-unlock, RESERVED-return) are unknown with a question in unknowns",
+          "passed": true,
+          "evidence": "states=['ACTIVE', 'EXPIRED', 'RESERVED', 'RETURNED'], actions=['unlock', 'timeout', 'return'], cells=12, legal={('RESERVED', 'unlock'): 'ACTIVE', ('RESERVED', 'timeout'): 'EXPIRED', ('ACTIVE', 'return'): 'RETURNED'}, not-unknown among ACTIVE-unlock/RESERVED-return=[]"
+        },
+        {
+          "text": "No equivalence class is defined for empty, null, negative or wrong-type values",
+          "passed": true,
+          "evidence": "none"
+        },
+        {
+          "text": "Every EP, BV and ST id appears in the covers list of at least one test, and every id in covers/affects exists",
+          "passed": true,
+          "evidence": "uncovered: []; dangling refs: []"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "flight-duration-bv",
+      "eval_name": "flight-duration-bv",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 60.7,
+        "tokens": 55797,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "06-business-rules.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+          "passed": true,
+          "evidence": "file and all keys present"
+        },
+        {
+          "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+          "passed": true,
+          "evidence": "12/12 verbatim; bad: []"
+        },
+        {
+          "text": "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+          "passed": true,
+          "evidence": "3 BV; bad: []"
+        },
+        {
+          "text": "There is a boundary at 15 minutes with values 14/15/16 minutes expected invalid/valid/valid, inclusive true, step 1 minute",
+          "passed": true,
+          "evidence": "BV-01: [(14.0, 'invalid'), (15.0, 'valid'), (16.0, 'valid')], inclusive=True, step=1 хв"
+        },
+        {
+          "text": "There is a boundary at 240 minutes with values 239/240/241 minutes expected valid/valid/invalid, inclusive true, step 1 minute",
+          "passed": true,
+          "evidence": "BV-02: [(239.0, 'valid'), (240.0, 'valid'), (241.0, 'invalid')], inclusive=True, step=1 хв"
+        },
+        {
+          "text": "Equivalence classes include below 15 minutes (invalid), 15–240 minutes (valid) and above 240 minutes (invalid), each quoting spec line 97",
+          "passed": true,
+          "evidence": "valid15-240=True, below=True, above=True, all quote 97=True"
+        },
+        {
+          "text": "state_transitions is {not_applicable: ...} because the focus is a duration rule, not a state machine",
+          "passed": true,
+          "evidence": "state_transitions keys: ['not_applicable']"
+        },
+        {
+          "text": "Every EP and BV id appears in the covers list of at least one test, and every id in covers/affects exists",
+          "passed": true,
+          "evidence": "uncovered: []; dangling refs: []"
+        },
+        {
+          "text": "No equivalence class is defined for empty, null or wrong-type values; if such cases are raised, they appear only as a question in unknowns",
+          "passed": true,
+          "evidence": "none"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "request-lifecycle-st",
+      "eval_name": "request-lifecycle-st",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 126.2,
+        "tokens": 60174,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "02-state-machine.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+          "passed": true,
+          "evidence": "file and all keys present"
+        },
+        {
+          "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+          "passed": true,
+          "evidence": "110/110 verbatim; bad: []"
+        },
+        {
+          "text": "states lists all seven states DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, CANCELLED, COMPLETED, and actions include submit, approve, reject, complete and cancel",
+          "passed": true,
+          "evidence": "states=['APPROVED', 'CANCELLED', 'COMPLETED', 'DRAFT', 'REJECTED', 'SUBMITTED', 'UNDER_REVIEW'], actions=['submit', 'gates pass (automatic)', 'gates fail (automatic)', 'approve', 'reject', 'complete', 'cancel']"
+        },
+        {
+          "text": "The matrix has exactly len(states) × len(actions) cells with every (from, action) pair exactly once",
+          "passed": true,
+          "evidence": "49 cells, 49 unique, expected 49"
+        },
+        {
+          "text": "The legal cells are exactly the transitions listed in the spec table (DRAFT submit, UNDER_REVIEW approve/reject, APPROVED complete, DRAFT/SUBMITTED/UNDER_REVIEW/APPROVED cancel, plus SUBMITTED automatic gate pass/fail if those are modelled as actions), each with the correct target state",
+          "passed": true,
+          "evidence": "legal=10; wrong=[]; missing=[]"
+        },
+        {
+          "text": "Every non-listed pair is illegal with to null, including every action from REJECTED, CANCELLED and COMPLETED and submit from UNDER_REVIEW; none is left unknown",
+          "passed": true,
+          "evidence": "non-illegal unlisted cells: []"
+        },
+        {
+          "text": "Illegal cells carry response 409 with a verbatim quote, or 409 is otherwise recorded with a quote — never without one",
+          "passed": true,
+          "evidence": "44 response fields, 41 with 409, 0 without quote"
+        },
+        {
+          "text": "The 2-hour APPROVED cancellation deadline is a boundary value with three values whose boundary value has expected unknown (inclusive null) and a matching question in unknowns",
+          "passed": true,
+          "evidence": "BV-01: values=[('3 години до window_start', 'valid'), ('2 години до window_start', 'unknown'), ('1 година до window_start', 'invalid')], inclusive=None, unknowns=['U-01', 'U-02']"
+        },
+        {
+          "text": "Every EP, BV and ST id appears in the covers list of at least one test, and every id in covers/affects exists",
+          "passed": true,
+          "evidence": "uncovered: []; dangling refs: []"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "bike-rental-gaps",
+      "eval_name": "bike-rental-gaps",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.2,
+        "passed": 2,
+        "failed": 8,
+        "total": 10,
+        "time_seconds": 46.7,
+        "tokens": 43808,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "bike-rental.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+          "passed": false,
+          "evidence": "missing keys: ['equivalence_classes', 'focus', 'spec', 'tests']"
+        },
+        {
+          "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+          "passed": false,
+          "evidence": "no quote objects found"
+        },
+        {
+          "text": "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+          "passed": false,
+          "evidence": "7 BV; bad: ['BV-AGE-16', 'BV-PIN-4', 'BV-PIN-6', 'BV-DUR-30', 'BV-DUR-480', 'BV-ACT-2', 'BV-RES-15']"
+        },
+        {
+          "text": "The age boundary at 16 years is inclusive (from 'at least') with 15/16/17 years expected invalid/valid/valid",
+          "passed": false,
+          "evidence": "BV-AGE-16: [(15.0, 'rental refused'), (16.0, 'rental allowed'), (17.0, 'rental allowed')], inclusive=None, step=None"
+        },
+        {
+          "text": "Both rental-duration boundaries (30 and 480 minutes) have inclusive null and expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+          "passed": false,
+          "evidence": "BV-DUR-30: [(29, 'invalid (consequence not specified)'), (30, 'valid'), (31, 'valid')], inclusive=None, unknowns=[] | BV-DUR-480: [(479, 'valid'), (480, 'valid'), (481, 'invalid (consequence not specified)')], inclusive=None, unknowns=[]"
+        },
+        {
+          "text": "The PIN length boundaries (4 and 6 digits) have expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+          "passed": false,
+          "evidence": "BV-PIN-4: [(3, 'rejected'), (4, 'accepted'), (5, 'accepted')], inclusive=None, unknowns=[] | BV-PIN-6: [(5, 'accepted'), (6, 'accepted'), (7, 'rejected')], inclusive=None, unknowns=[]"
+        },
+        {
+          "text": "No element has a response field (the spec names no error responses), and unknowns contains a question about what the system returns on violation",
+          "passed": true,
+          "evidence": "response fields present=False; question=U-01"
+        },
+        {
+          "text": "The state matrix covers all 4 states × all actions (unlock, timeout, return); legal cells are exactly RESERVED-unlock→ACTIVE, RESERVED-timeout→EXPIRED, ACTIVE-return→RETURNED; unlisted pairs from non-final states (e.g. ACTIVE-unlock, RESERVED-return) are unknown with a question in unknowns",
+          "passed": false,
+          "evidence": "states=['ACTIVE', 'EXPIRED', 'RESERVED', 'RETURNED'], actions=['unlock', 'timeout', 'return'], cells=0, legal={}, not-unknown among ACTIVE-unlock/RESERVED-return=[('ACTIVE', 'unlock'), ('RESERVED', 'return')]"
+        },
+        {
+          "text": "No equivalence class is defined for empty, null, negative or wrong-type values",
+          "passed": true,
+          "evidence": "none"
+        },
+        {
+          "text": "Every EP, BV and ST id appears in the covers list of at least one test, and every id in covers/affects exists",
+          "passed": false,
+          "evidence": "uncovered: ['BV-ACT-2', 'BV-AGE-16', 'BV-DUR-30', 'BV-DUR-480', 'BV-PIN-4', 'BV-PIN-6', 'BV-RES-15']; dangling refs: []"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "flight-duration-bv",
+      "eval_name": "flight-duration-bv",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.11,
+        "passed": 1,
+        "failed": 8,
+        "total": 9,
+        "time_seconds": 48.8,
+        "tokens": 49969,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "06-business-rules.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+          "passed": false,
+          "evidence": "expected file missing; found 06-business-rules.flight-duration.design.json"
+        },
+        {
+          "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+          "passed": false,
+          "evidence": "no quote objects found"
+        },
+        {
+          "text": "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+          "passed": false,
+          "evidence": "9 BV; bad: ['BV-1', 'BV-2', 'BV-3', 'BV-4', 'BV-5', 'BV-6', 'BV-7', 'BV-8', 'BV-9']"
+        },
+        {
+          "text": "There is a boundary at 15 minutes with values 14/15/16 minutes expected invalid/valid/valid, inclusive true, step 1 minute",
+          "passed": false,
+          "evidence": "BV-4: [], inclusive=None, step=None"
+        },
+        {
+          "text": "There is a boundary at 240 minutes with values 239/240/241 minutes expected valid/valid/invalid, inclusive true, step 1 minute",
+          "passed": false,
+          "evidence": "BV-7: [], inclusive=None, step=None"
+        },
+        {
+          "text": "Equivalence classes include below 15 minutes (invalid), 15–240 minutes (valid) and above 240 minutes (invalid), each quoting spec line 97",
+          "passed": false,
+          "evidence": "check error: AttributeError(\"'str' object has no attribute 'get'\")"
+        },
+        {
+          "text": "state_transitions is {not_applicable: ...} because the focus is a duration rule, not a state machine",
+          "passed": false,
+          "evidence": "state_transitions keys: ['applicable', 'reason', 'related_ordering_checks']"
+        },
+        {
+          "text": "Every EP and BV id appears in the covers list of at least one test, and every id in covers/affects exists",
+          "passed": false,
+          "evidence": "uncovered: ['BV-1', 'BV-2', 'BV-3', 'BV-4', 'BV-5', 'BV-6', 'BV-7', 'BV-8']; dangling refs: []"
+        },
+        {
+          "text": "No equivalence class is defined for empty, null or wrong-type values; if such cases are raised, they appear only as a question in unknowns",
+          "passed": true,
+          "evidence": "none"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "request-lifecycle-st",
+      "eval_name": "request-lifecycle-st",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 9,
+        "total": 9,
+        "time_seconds": 92.1,
+        "tokens": 51165,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "02-state-machine.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+          "passed": false,
+          "evidence": "missing keys: ['equivalence_classes', 'focus', 'spec', 'state_transitions', 'tests']"
+        },
+        {
+          "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+          "passed": false,
+          "evidence": "no quote objects found"
+        },
+        {
+          "text": "states lists all seven states DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, CANCELLED, COMPLETED, and actions include submit, approve, reject, complete and cancel",
+          "passed": false,
+          "evidence": "states=[], actions=[]"
+        },
+        {
+          "text": "The matrix has exactly len(states) × len(actions) cells with every (from, action) pair exactly once",
+          "passed": false,
+          "evidence": "0 cells, 0 unique, expected 0"
+        },
+        {
+          "text": "The legal cells are exactly the transitions listed in the spec table (DRAFT submit, UNDER_REVIEW approve/reject, APPROVED complete, DRAFT/SUBMITTED/UNDER_REVIEW/APPROVED cancel, plus SUBMITTED automatic gate pass/fail if those are modelled as actions), each with the correct target state",
+          "passed": false,
+          "evidence": "legal=0; wrong=[]; missing=[]"
+        },
+        {
+          "text": "Every non-listed pair is illegal with to null, including every action from REJECTED, CANCELLED and COMPLETED and submit from UNDER_REVIEW; none is left unknown",
+          "passed": false,
+          "evidence": "non-illegal unlisted cells: []"
+        },
+        {
+          "text": "Illegal cells carry response 409 with a verbatim quote, or 409 is otherwise recorded with a quote — never without one",
+          "passed": false,
+          "evidence": "0 response fields, 0 with 409, 0 without quote"
+        },
+        {
+          "text": "The 2-hour APPROVED cancellation deadline is a boundary value with three values whose boundary value has expected unknown (inclusive null) and a matching question in unknowns",
+          "passed": false,
+          "evidence": "BV-01: values=[('window_start - 2h - 1 min', 'CANCELLED'), ('window_start - 2h exactly', \"CANCELLED if 'up to' is inclusive (assumed, see U-05)\"), ('window_start - 2h + 1 min', '409, stays APPROVED')], inclusive=None, unknowns=[]"
+        },
+        {
+          "text": "Every EP, BV and ST id appears in the covers list of at least one test, and every id in covers/affects exists",
+          "passed": false,
+          "evidence": "uncovered: ['BV-01', 'BV-02', 'BV-03']; dangling refs: []"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 90.0,
+        "stddev": 33.2907,
+        "min": 60.7,
+        "max": 126.2
+      },
+      "tokens": {
+        "mean": 56450.6667,
+        "stddev": 3443.3519,
+        "min": 53381,
+        "max": 60174
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.1033,
+        "stddev": 0.1002,
+        "min": 0.0,
+        "max": 0.2
+      },
+      "time_seconds": {
+        "mean": 62.5333,
+        "stddev": 25.627,
+        "min": 46.7,
+        "max": 92.1
+      },
+      "tokens": {
+        "mean": 48314.0,
+        "stddev": 3947.8641,
+        "min": 43808,
+        "max": 51165
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.90",
+      "time_seconds": "+27.5",
+      "tokens": "+8137"
+    }
+  },
+  "notes": [
+    "Much of the baseline's failure is format: it never used {line,text} quote objects, a tests/covers list or valid/invalid/unknown labels. The skill's value is largely in imposing the contract, so pass-rate delta overstates substantive quality gap.",
+    "Substantive baseline problems beyond format: lifecycle baseline had only 31/73 string quotes verbatim (paraphrases); bike baseline assumed 30–480 and PIN 4–6 inclusive instead of flagging unknown; flight baseline invented a 'crosses midnight' class not in the text.",
+    "With-skill runs: all quotes verbatim with line numbers, matrices complete (lifecycle 7×7=49, bike 4×3=12), no invented empty/null classes, inclusivity unknowns flagged.",
+    "Run note: the with-skill lifecycle agent used a script to self-check quotes; under the skill's allowed-tools (no Bash) a real invocation must verify with Read — slower but same rule.",
+    "Skill costs ~+28s and ~+8k tokens per run on average."
+  ]
+}

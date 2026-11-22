@@ -1,0 +1,136 @@
+{
+  "source": "06-business-rules.md",
+  "source_section": "§1.4 TIME_WINDOW — Duration; §6 rule_reference values; Evaluation order",
+  "subject": "Flight duration (window_end - window_start) in the TIME_WINDOW gate",
+  "rule": {
+    "quote": "Duration | 15–240 minutes, inclusive at both ends. `window_end` strictly after `window_start`. | `TSD-4` §3",
+    "governing_source": "TSD-4 §3",
+    "failure_response": {
+      "status": 422,
+      "failing_gate": "TIME_WINDOW",
+      "rule_reference": "TSD-4 §3",
+      "quote": "| `TIME_WINDOW` | Duration out of range | `TSD-4 §3` |"
+    },
+    "variable": "duration_minutes = window_end - window_start (both stored and compared in UTC)",
+    "utc_quote": "`window_start`/`window_end` are stored and compared in UTC."
+  },
+  "preconditions_for_isolation": {
+    "description": "Duration is only evaluated when the earlier gates pass and other TIME_WINDOW conditions do not interfere.",
+    "evaluation_order_quote": "Gates run in a fixed order and evaluation stops at the first failure: **`PILOT` → `AIRCRAFT` → `ZONE` → `TIME_WINDOW`**",
+    "baseline": [
+      "PILOT passes: rating covers zone class, certification current at window_start (OH-1 §2.1, §2.3)",
+      "AIRCRAFT passes: weight band in zone's permitted_bands",
+      "ZONE passes: altitude <= ceiling, operator authorisation level sufficient, zone active",
+      "Lead time >= 6 h and window_start <= 60 days ahead",
+      "Zone without curfew (DNI-OPN-1 or KHR-OPN-4) so a 240-minute window cannot touch a curfew",
+      "No other APPROVED/UNDER_REVIEW request for the same aircraft overlaps the window"
+    ]
+  },
+  "equivalence_classes": [
+    {
+      "id": "EP-1",
+      "name": "window_end before window_start (negative duration)",
+      "range": "duration < 0",
+      "valid": false,
+      "expected": "Rejected: 422, failing_gate TIME_WINDOW",
+      "representative": "window_start 10:00, window_end 09:00 (-60 min)",
+      "quote": "`window_end` strictly after `window_start`.",
+      "note": "rule_reference for this case is not stated separately; assumed TSD-4 §3 because it is in the same table row — see U-2"
+    },
+    {
+      "id": "EP-2",
+      "name": "window_end equals window_start (zero duration)",
+      "range": "duration = 0",
+      "valid": false,
+      "expected": "Rejected: 422, failing_gate TIME_WINDOW",
+      "representative": "window_start 10:00, window_end 10:00",
+      "quote": "`window_end` strictly after `window_start`."
+    },
+    {
+      "id": "EP-3",
+      "name": "Positive duration below minimum",
+      "range": "0 < duration < 15 min",
+      "valid": false,
+      "expected": "Rejected: 422, failing_gate TIME_WINDOW, rule_reference TSD-4 §3",
+      "representative": "10 min",
+      "quote": "15–240 minutes, inclusive at both ends."
+    },
+    {
+      "id": "EP-4",
+      "name": "Duration within allowed range",
+      "range": "15 <= duration <= 240 min",
+      "valid": true,
+      "expected": "Duration check passes; TIME_WINDOW does not fail on TSD-4 §3",
+      "representative": "120 min",
+      "quote": "15–240 minutes, inclusive at both ends."
+    },
+    {
+      "id": "EP-5",
+      "name": "Duration above maximum",
+      "range": "duration > 240 min",
+      "valid": false,
+      "expected": "Rejected: 422, failing_gate TIME_WINDOW, rule_reference TSD-4 §3",
+      "representative": "300 min",
+      "quote": "15–240 minutes, inclusive at both ends."
+    },
+    {
+      "id": "EP-6",
+      "name": "Window crossing midnight UTC (valid length)",
+      "range": "15 <= duration <= 240 min, window_start and window_end on different UTC dates",
+      "valid": true,
+      "expected": "Duration check passes (duration computed across the date change)",
+      "representative": "23:00 → 01:00 UTC next day (120 min), zone without curfew",
+      "quote": "`window_start`/`window_end` are stored and compared in UTC.",
+      "note": "Derived class (date-change risk); the spec does not mention it explicitly"
+    }
+  ],
+  "boundary_values": [
+    { "id": "BV-1", "boundary": "window_end vs window_start (strictly after)", "value_minutes": -1, "valid": false, "expected": "422 TIME_WINDOW", "quote": "`window_end` strictly after `window_start`." },
+    { "id": "BV-2", "boundary": "window_end vs window_start (strictly after)", "value_minutes": 0, "valid": false, "expected": "422 TIME_WINDOW", "quote": "`window_end` strictly after `window_start`." },
+    { "id": "BV-3", "boundary": "window_end vs window_start (strictly after)", "value_minutes": 1, "valid": false, "expected": "422 TIME_WINDOW, rule_reference TSD-4 §3 (below 15 min)", "quote": "15–240 minutes, inclusive at both ends." },
+    { "id": "BV-4", "boundary": "lower bound 15 min (inclusive)", "value_minutes": 14, "valid": false, "expected": "422 TIME_WINDOW, rule_reference TSD-4 §3", "quote": "15–240 minutes, inclusive at both ends." },
+    { "id": "BV-5", "boundary": "lower bound 15 min (inclusive)", "value_minutes": 15, "valid": true, "expected": "Duration check passes", "quote": "15–240 minutes, inclusive at both ends." },
+    { "id": "BV-6", "boundary": "lower bound 15 min (inclusive)", "value_minutes": 16, "valid": true, "expected": "Duration check passes", "quote": "15–240 minutes, inclusive at both ends." },
+    { "id": "BV-7", "boundary": "upper bound 240 min (inclusive)", "value_minutes": 239, "valid": true, "expected": "Duration check passes", "quote": "15–240 minutes, inclusive at both ends." },
+    { "id": "BV-8", "boundary": "upper bound 240 min (inclusive)", "value_minutes": 240, "valid": true, "expected": "Duration check passes", "quote": "15–240 minutes, inclusive at both ends." },
+    { "id": "BV-9", "boundary": "upper bound 240 min (inclusive)", "value_minutes": 241, "valid": false, "expected": "422 TIME_WINDOW, rule_reference TSD-4 §3", "quote": "15–240 minutes, inclusive at both ends." }
+  ],
+  "state_transitions": {
+    "applicable": false,
+    "reason": "The spec defines no state machine for duration. The only ordering it gives is gate evaluation order (PILOT → AIRCRAFT → ZONE → TIME_WINDOW, stop at first failure). Request lifecycle states (DRAFT, UNDER_REVIEW, APPROVED, ...) are named in §1.4 'No overlap' and §5 but transitions are not described in this file.",
+    "related_ordering_checks": [
+      {
+        "id": "ORD-1",
+        "description": "Invalid duration + an earlier gate failing (e.g. PILOT certification lapsed) → failing_gate is the earlier gate, not TIME_WINDOW",
+        "quote": "`failing_gate` in a `422` response always names the *first* gate to fail, never every gate that would fail."
+      },
+      {
+        "id": "ORD-2",
+        "description": "Invalid duration + all earlier gates pass → failing_gate TIME_WINDOW, rule_reference TSD-4 §3",
+        "quote": "| `TIME_WINDOW` | Duration out of range | `TSD-4 §3` |"
+      }
+    ]
+  },
+  "unknowns": [
+    {
+      "id": "U-1",
+      "question": "Time granularity: are window_start/window_end second-precision? Is 14 min 59 s (or 240 min 1 s) rejected? The spec states the range only in whole minutes.",
+      "impact": "Sub-minute boundary values (14:59, 240:01) cannot be assigned an expected result."
+    },
+    {
+      "id": "U-2",
+      "question": "Which rule_reference is returned when window_end <= window_start? The 'strictly after' clause is in the Duration row, but §6 lists only 'Duration out of range → TSD-4 §3'. It could also be a schema-level 400/422 before gates run.",
+      "impact": "Expected result for EP-1, EP-2, BV-1, BV-2 is only partially defined (status/gate assumed)."
+    },
+    {
+      "id": "U-3",
+      "question": "Order of conditions inside TIME_WINDOW is not specified. If both lead time and duration fail (or duration and curfew/overlap), which rule_reference is returned?",
+      "impact": "Combination cases inside TIME_WINDOW have no defined expected rule_reference; test duration in isolation (see preconditions)."
+    },
+    {
+      "id": "U-4",
+      "question": "Is duration re-checked when a request is edited/resubmitted, or only at submission? The file does not say when gates run in the lifecycle.",
+      "impact": "No state-transition cases can be derived for duration."
+    }
+  ]
+}

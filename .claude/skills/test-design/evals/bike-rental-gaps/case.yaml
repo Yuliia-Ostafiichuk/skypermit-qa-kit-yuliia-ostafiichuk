@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: bike-rental-gaps
+expected_outcome: |
+  bike-rental.design.json: EP/BV for age (at least 16 → 15 invalid/16 valid/17 valid), PIN length 4–6 and rental duration 30–480 min with boundary inclusivity unknown, max 2 active rentals (at most → inclusive), 15-minute reservation expiry; 4×3 state matrix where RETURNED/EXPIRED rows are illegal (final) and other unlisted pairs are unknown; no invented response codes or empty/null classes; unknowns for inclusivity, error responses, unlisted transitions.
+context:
+  scaffold_script: place-files.sh

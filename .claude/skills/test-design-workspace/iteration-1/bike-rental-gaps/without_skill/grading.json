@@ -1,0 +1,60 @@
+{
+  "expectations": [
+    {
+      "text": "bike-rental.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+      "passed": false,
+      "evidence": "missing keys: ['equivalence_classes', 'focus', 'spec', 'tests']"
+    },
+    {
+      "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+      "passed": false,
+      "evidence": "no quote objects found"
+    },
+    {
+      "text": "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+      "passed": false,
+      "evidence": "7 BV; bad: ['BV-AGE-16', 'BV-PIN-4', 'BV-PIN-6', 'BV-DUR-30', 'BV-DUR-480', 'BV-ACT-2', 'BV-RES-15']"
+    },
+    {
+      "text": "The age boundary at 16 years is inclusive (from 'at least') with 15/16/17 years expected invalid/valid/valid",
+      "passed": false,
+      "evidence": "BV-AGE-16: [(15.0, 'rental refused'), (16.0, 'rental allowed'), (17.0, 'rental allowed')], inclusive=None, step=None"
+    },
+    {
+      "text": "Both rental-duration boundaries (30 and 480 minutes) have inclusive null and expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+      "passed": false,
+      "evidence": "BV-DUR-30: [(29, 'invalid (consequence not specified)'), (30, 'valid'), (31, 'valid')], inclusive=None, unknowns=[] | BV-DUR-480: [(479, 'valid'), (480, 'valid'), (481, 'invalid (consequence not specified)')], inclusive=None, unknowns=[]"
+    },
+    {
+      "text": "The PIN length boundaries (4 and 6 digits) have expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+      "passed": false,
+      "evidence": "BV-PIN-4: [(3, 'rejected'), (4, 'accepted'), (5, 'accepted')], inclusive=None, unknowns=[] | BV-PIN-6: [(5, 'accepted'), (6, 'accepted'), (7, 'rejected')], inclusive=None, unknowns=[]"
+    },
+    {
+      "text": "No element has a response field (the spec names no error responses), and unknowns contains a question about what the system returns on violation",
+      "passed": true,
+      "evidence": "response fields present=False; question=U-01"
+    },
+    {
+      "text": "The state matrix covers all 4 states × all actions (unlock, timeout, return); legal cells are exactly RESERVED-unlock→ACTIVE, RESERVED-timeout→EXPIRED, ACTIVE-return→RETURNED; unlisted pairs from non-final states (e.g. ACTIVE-unlock, RESERVED-return) are unknown with a question in unknowns",
+      "passed": false,
+      "evidence": "states=['ACTIVE', 'EXPIRED', 'RESERVED', 'RETURNED'], actions=['unlock', 'timeout', 'return'], cells=0, legal={}, not-unknown among ACTIVE-unlock/RESERVED-return=[('ACTIVE', 'unlock'), ('RESERVED', 'return')]"
+    },
+    {
+      "text": "No equivalence class is defined for empty, null, negative or wrong-type values",
+      "passed": true,
+      "evidence": "none"
+    },
+    {
+      "text": "Every EP, BV and ST id appears in the covers list of at least one test, and every id in covers/affects exists",
+      "passed": false,
+      "evidence": "uncovered: ['BV-ACT-2', 'BV-AGE-16', 'BV-DUR-30', 'BV-DUR-480', 'BV-PIN-4', 'BV-PIN-6', 'BV-RES-15']; dangling refs: []"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 8,
+    "total": 10,
+    "pass_rate": 0.2
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "eval_name": "bike-rental-gaps",
+  "prompt": "Зроби тест-дизайн (EP, BV, переходи станів) для bike-rental.md — скинь у json поруч",
+  "assertions": [
+    "bike-rental.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+    "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+    "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+    "The age boundary at 16 years is inclusive (from 'at least') with 15/16/17 years expected invalid/valid/valid",
+    "Both rental-duration boundaries (30 and 480 minutes) have inclusive null and expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+    "The PIN length boundaries (4 and 6 digits) have expected unknown at the boundary value itself, with an inclusivity question in unknowns",
+    "No element has a response field (the spec names no error responses), and unknowns contains a question about what the system returns on violation",
+    "The state matrix covers all 4 states × all actions (unlock, timeout, return); legal cells are exactly RESERVED-unlock→ACTIVE, RESERVED-timeout→EXPIRED, ACTIVE-return→RETURNED; unlisted pairs from non-final states (e.g. ACTIVE-unlock, RESERVED-return) are unknown with a question in unknowns",
+    "No equivalence class is defined for empty, null, negative or wrong-type values",
+    "Every EP, BV and ST id appears in the covers list of at least one test, and every id in covers/affects exists"
+  ]
+}

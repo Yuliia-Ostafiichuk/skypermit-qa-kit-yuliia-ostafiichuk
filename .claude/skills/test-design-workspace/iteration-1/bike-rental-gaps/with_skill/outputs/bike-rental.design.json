@@ -1,0 +1,151 @@
+{
+  "spec": "/Users/yuliiaostafiichuk/genai-course-yos/skypermit-qa-kit-yuliia-ostafiichuk/.claude/skills/test-design-workspace/iteration-1/bike-rental-gaps/with_skill/outputs/bike-rental.md",
+  "focus": null,
+  "equivalence_classes": [
+    {"id": "EP-01", "parameter": "вік райдера", "class": "≥ 16 років", "valid": true, "representative": "30 років",
+     "quote": {"line": 5, "text": "A rider must be at least 16 years old to start a rental."}},
+    {"id": "EP-02", "parameter": "вік райдера", "class": "< 16 років", "valid": false, "representative": "10 років",
+     "quote": {"line": 5, "text": "A rider must be at least 16 years old to start a rental."}},
+    {"id": "EP-03", "parameter": "кількість цифр PIN", "class": "4–6 цифр", "valid": true, "representative": "5 цифр",
+     "quote": {"line": 6, "text": "The account PIN has 4 to 6 digits."}},
+    {"id": "EP-04", "parameter": "кількість цифр PIN", "class": "менше 4 цифр", "valid": false, "representative": "2 цифри",
+     "quote": {"line": 6, "text": "The account PIN has 4 to 6 digits."}},
+    {"id": "EP-05", "parameter": "кількість цифр PIN", "class": "більше 6 цифр", "valid": false, "representative": "8 цифр",
+     "quote": {"line": 6, "text": "The account PIN has 4 to 6 digits."}},
+    {"id": "EP-06", "parameter": "тривалість оренди", "class": "30–480 хвилин", "valid": true, "representative": "120 хвилин",
+     "quote": {"line": 10, "text": "A single rental lasts between 30 and 480 minutes."}},
+    {"id": "EP-07", "parameter": "тривалість оренди", "class": "менше 30 хвилин", "valid": false, "representative": "10 хвилин",
+     "quote": {"line": 10, "text": "A single rental lasts between 30 and 480 minutes."}},
+    {"id": "EP-08", "parameter": "тривалість оренди", "class": "більше 480 хвилин", "valid": false, "representative": "600 хвилин",
+     "quote": {"line": 10, "text": "A single rental lasts between 30 and 480 minutes."}},
+    {"id": "EP-09", "parameter": "кількість одночасних активних оренд", "class": "≤ 2", "valid": true, "representative": "1 активна оренда",
+     "quote": {"line": 11, "text": "A rider may hold at most 2 active rentals at the same time."}},
+    {"id": "EP-10", "parameter": "кількість одночасних активних оренд", "class": "> 2", "valid": false, "representative": "4 активні оренди",
+     "quote": {"line": 11, "text": "A rider may hold at most 2 active rentals at the same time."}},
+    {"id": "EP-11", "parameter": "час від резервування до unlock", "class": "у межах 15 хвилин (резервація не спливає)", "valid": true, "representative": "5 хвилин",
+     "quote": {"line": 12, "text": "A reservation expires if the bike is not unlocked within 15 minutes."}},
+    {"id": "EP-12", "parameter": "час від резервування до unlock", "class": "понад 15 хвилин (резервація спливає)", "valid": false, "representative": "30 хвилин",
+     "quote": {"line": 12, "text": "A reservation expires if the bike is not unlocked within 15 minutes."}}
+  ],
+  "boundary_values": [
+    {"id": "BV-01", "parameter": "вік райдера", "boundary": "16 років", "inclusive": true, "step": "1 рік",
+     "values": [
+       {"value": "15 років", "expected": "invalid"},
+       {"value": "16 років", "expected": "valid"},
+       {"value": "17 років", "expected": "valid"}
+     ],
+     "quote": {"line": 5, "text": "A rider must be at least 16 years old to start a rental."}},
+    {"id": "BV-02", "parameter": "кількість цифр PIN", "boundary": "4 цифри", "inclusive": null, "step": "1 цифра",
+     "values": [
+       {"value": "3 цифри", "expected": "invalid"},
+       {"value": "4 цифри", "expected": "unknown"},
+       {"value": "5 цифр", "expected": "valid"}
+     ],
+     "quote": {"line": 6, "text": "The account PIN has 4 to 6 digits."}},
+    {"id": "BV-03", "parameter": "кількість цифр PIN", "boundary": "6 цифр", "inclusive": null, "step": "1 цифра",
+     "values": [
+       {"value": "5 цифр", "expected": "valid"},
+       {"value": "6 цифр", "expected": "unknown"},
+       {"value": "7 цифр", "expected": "invalid"}
+     ],
+     "quote": {"line": 6, "text": "The account PIN has 4 to 6 digits."}},
+    {"id": "BV-04", "parameter": "тривалість оренди", "boundary": "30 хвилин", "inclusive": null, "step": "1 хвилина",
+     "values": [
+       {"value": "29 хвилин", "expected": "invalid"},
+       {"value": "30 хвилин", "expected": "unknown"},
+       {"value": "31 хвилина", "expected": "valid"}
+     ],
+     "quote": {"line": 10, "text": "A single rental lasts between 30 and 480 minutes."}},
+    {"id": "BV-05", "parameter": "тривалість оренди", "boundary": "480 хвилин", "inclusive": null, "step": "1 хвилина",
+     "values": [
+       {"value": "479 хвилин", "expected": "valid"},
+       {"value": "480 хвилин", "expected": "unknown"},
+       {"value": "481 хвилина", "expected": "invalid"}
+     ],
+     "quote": {"line": 10, "text": "A single rental lasts between 30 and 480 minutes."}},
+    {"id": "BV-06", "parameter": "кількість одночасних активних оренд", "boundary": "2 оренди", "inclusive": true, "step": "1 оренда",
+     "values": [
+       {"value": "1 активна оренда", "expected": "valid"},
+       {"value": "2 активні оренди", "expected": "valid"},
+       {"value": "3 активні оренди", "expected": "invalid"}
+     ],
+     "quote": {"line": 11, "text": "A rider may hold at most 2 active rentals at the same time."}},
+    {"id": "BV-07", "parameter": "час від резервування до unlock (умова переходу RESERVED → EXPIRED)", "boundary": "15 хвилин", "inclusive": null, "step": "1 хвилина",
+     "values": [
+       {"value": "unlock через 14 хвилин", "expected": "valid"},
+       {"value": "unlock через 15 хвилин", "expected": "unknown"},
+       {"value": "unlock через 16 хвилин", "expected": "invalid"}
+     ],
+     "quote": {"line": 12, "text": "A reservation expires if the bike is not unlocked within 15 minutes."}}
+  ],
+  "state_transitions": {
+    "states": ["RESERVED", "ACTIVE", "RETURNED", "EXPIRED"],
+    "actions": ["unlock", "timeout", "return"],
+    "matrix": [
+      {"id": "ST-01", "from": "RESERVED", "action": "unlock", "result": "legal", "to": "ACTIVE",
+       "quote": {"line": 20, "text": "| RESERVED | unlock | ACTIVE |"}},
+      {"id": "ST-02", "from": "RESERVED", "action": "timeout", "result": "legal", "to": "EXPIRED",
+       "quote": {"line": 21, "text": "| RESERVED | timeout | EXPIRED |"}},
+      {"id": "ST-03", "from": "RESERVED", "action": "return", "result": "unknown", "to": null,
+       "quote": {"line": 18, "text": "| From | Action | To |"}},
+      {"id": "ST-04", "from": "ACTIVE", "action": "unlock", "result": "unknown", "to": null,
+       "quote": {"line": 18, "text": "| From | Action | To |"}},
+      {"id": "ST-05", "from": "ACTIVE", "action": "timeout", "result": "unknown", "to": null,
+       "quote": {"line": 18, "text": "| From | Action | To |"}},
+      {"id": "ST-06", "from": "ACTIVE", "action": "return", "result": "legal", "to": "RETURNED",
+       "quote": {"line": 22, "text": "| ACTIVE | return | RETURNED |"}},
+      {"id": "ST-07", "from": "RETURNED", "action": "unlock", "result": "illegal", "to": null,
+       "quote": {"line": 24, "text": "RETURNED and EXPIRED are final."}},
+      {"id": "ST-08", "from": "RETURNED", "action": "timeout", "result": "illegal", "to": null,
+       "quote": {"line": 24, "text": "RETURNED and EXPIRED are final."}},
+      {"id": "ST-09", "from": "RETURNED", "action": "return", "result": "illegal", "to": null,
+       "quote": {"line": 24, "text": "RETURNED and EXPIRED are final."}},
+      {"id": "ST-10", "from": "EXPIRED", "action": "unlock", "result": "illegal", "to": null,
+       "quote": {"line": 24, "text": "RETURNED and EXPIRED are final."}},
+      {"id": "ST-11", "from": "EXPIRED", "action": "timeout", "result": "illegal", "to": null,
+       "quote": {"line": 24, "text": "RETURNED and EXPIRED are final."}},
+      {"id": "ST-12", "from": "EXPIRED", "action": "return", "result": "illegal", "to": null,
+       "quote": {"line": 24, "text": "RETURNED and EXPIRED are final."}}
+    ]
+  },
+  "tests": [
+    {"id": "T-01", "covers": ["EP-01", "BV-01"]},
+    {"id": "T-02", "covers": ["EP-02"]},
+    {"id": "T-03", "covers": ["EP-03"]},
+    {"id": "T-04", "covers": ["BV-02", "EP-04"]},
+    {"id": "T-05", "covers": ["BV-03", "EP-05"]},
+    {"id": "T-06", "covers": ["EP-06"]},
+    {"id": "T-07", "covers": ["BV-04", "EP-07"]},
+    {"id": "T-08", "covers": ["BV-05", "EP-08"]},
+    {"id": "T-09", "covers": ["EP-09"]},
+    {"id": "T-10", "covers": ["BV-06", "EP-10"]},
+    {"id": "T-11", "covers": ["EP-11", "ST-01"]},
+    {"id": "T-12", "covers": ["BV-07", "EP-12", "ST-02"]},
+    {"id": "T-13", "covers": ["ST-06"]},
+    {"id": "T-14", "covers": ["ST-03"]},
+    {"id": "T-15", "covers": ["ST-04"]},
+    {"id": "T-16", "covers": ["ST-05"]},
+    {"id": "T-17", "covers": ["ST-07"]},
+    {"id": "T-18", "covers": ["ST-08"]},
+    {"id": "T-19", "covers": ["ST-09"]},
+    {"id": "T-20", "covers": ["ST-10"]},
+    {"id": "T-21", "covers": ["ST-11"]},
+    {"id": "T-22", "covers": ["ST-12"]}
+  ],
+  "unknowns": [
+    {"id": "U-01", "question": "«4 to 6 digits» — чи допустимі PIN рівно з 4 і рівно з 6 цифр (межі включні)?", "affects": ["BV-02", "BV-03"]},
+    {"id": "U-02", "question": "«between 30 and 480 minutes» — чи допустима оренда рівно 30 і рівно 480 хвилин (межі включні)?", "affects": ["BV-04", "BV-05"]},
+    {"id": "U-03", "question": "«not unlocked within 15 minutes» — чи спливає резервація, якщо unlock відбувся рівно на 15-й хвилині (15:00)?", "affects": ["BV-07"]},
+    {"id": "U-04", "question": "Що повертає система (код, текст помилки), коли райдер молодший 16 років намагається почати оренду?", "affects": ["EP-02", "BV-01"]},
+    {"id": "U-05", "question": "Що повертає система, коли PIN має менше 4 або більше 6 цифр?", "affects": ["EP-04", "EP-05", "BV-02", "BV-03"]},
+    {"id": "U-06", "question": "Що відбувається, коли тривалість оренди виходить за 30–480 хвилин: оренду відхиляють на старті, автоматично завершують на 480-й хвилині, блокують повернення до 30-ї хвилини, нараховують штраф? Яку відповідь повертає система?", "affects": ["EP-07", "EP-08", "BV-04", "BV-05"]},
+    {"id": "U-07", "question": "Що повертає система, коли райдер з 2 активними орендами намагається почати третю?", "affects": ["EP-10", "BV-06"]},
+    {"id": "U-08", "question": "Що повертає система при спробі unlock після того, як резервація сплила?", "affects": ["EP-12", "BV-07", "ST-10"]},
+    {"id": "U-09", "question": "Яку відповідь повертає система на будь-яку дію над орендою у фінальному стані RETURNED або EXPIRED?", "affects": ["ST-07", "ST-08", "ST-09", "ST-10", "ST-11", "ST-12"]},
+    {"id": "U-10", "question": "Таблиця переходів не дозволяє й не забороняє пари RESERVED × return, ACTIVE × unlock, ACTIVE × timeout, а загального правила «усі інші переходи заборонені» немає. Ці дії заборонені? Якщо так — яка відповідь; якщо ні — в який стан переходить оренда?", "affects": ["ST-03", "ST-04", "ST-05"]},
+    {"id": "U-11", "question": "Специфікація не описує порожні, нечислові чи некоректні значення: вік не задано або дробовий; PIN порожній, з нецифровими символами чи з провідними нулями; тривалість не задана. Як система має їх обробляти?", "affects": ["EP-01", "EP-02", "EP-03", "EP-04", "EP-05", "EP-06", "EP-07", "EP-08"]},
+    {"id": "U-12", "question": "Чи враховуються оренди у стані RESERVED у ліміт «at most 2 active rentals», чи лише ACTIVE?", "affects": ["EP-09", "EP-10", "BV-06"]},
+    {"id": "U-13", "question": "З якою точністю рахуються час і вік: чи враховуються секунди (наприклад, 29 хв 59 с, 15 хв 01 с) і чи 16 років рахуються від дати народження з точністю до дня?", "affects": ["BV-01", "BV-04", "BV-05", "BV-07"]},
+    {"id": "U-14", "question": "Що саме є «тривалістю оренди»: час, який райдер обирає наперед, чи фактичний час від unlock до return? Від якої події рахується 15-хвилинний таймер резервації?", "affects": ["EP-06", "EP-07", "EP-08", "EP-11", "EP-12", "BV-07"]}
+  ]
+}

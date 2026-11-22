@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: flight-duration-bv
+expected_outcome: |
+  06-business-rules.design.json next to the spec: EP and BV for flight duration 15–240 minutes, inclusive at both ends (14/15/16 and 239/240/241 min, step 1 min), window_end strictly after window_start, verbatim quotes with line numbers, state_transitions not_applicable, every class and boundary covered by a test, gaps in unknowns.
+context:
+  scaffold_script: place-files.sh

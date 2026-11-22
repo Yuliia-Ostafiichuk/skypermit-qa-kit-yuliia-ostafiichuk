@@ -1,0 +1,890 @@
+{
+  "source": {
+    "file": "02-state-machine.md",
+    "title": "Request Lifecycle",
+    "confluence_ref": "02 — State Machine (page 131074)",
+    "note": "Only this file was used as test basis. References to docs/06-business-rules.md §5 and supabase/migrations/0001_init.sql were not read."
+  },
+  "summary": {
+    "states": 7,
+    "caller_actions": 5,
+    "automatic_transitions": 2,
+    "st_cells": 35,
+    "st_rows_total": 37,
+    "valid_transitions": 10,
+    "invalid_pairs": 27
+  },
+  "model": {
+    "states": [
+      {
+        "name": "DRAFT",
+        "terminal": false,
+        "quote": "| `DRAFT` | Created, never submitted. No gates have run. | no |"
+      },
+      {
+        "name": "SUBMITTED",
+        "terminal": false,
+        "transient": true,
+        "quote": "| `SUBMITTED` | Transient. The submit call runs all four gates and leaves this state immediately — a request should never be observed sitting in `SUBMITTED`. | no |"
+      },
+      {
+        "name": "UNDER_REVIEW",
+        "terminal": false,
+        "quote": "| `UNDER_REVIEW` | All gates passed. Awaiting a reviewer decision. | no |"
+      },
+      {
+        "name": "APPROVED",
+        "terminal": false,
+        "quote": "| `APPROVED` | Authorised. Still cancellable until the deadline (see below). | no |"
+      },
+      {
+        "name": "REJECTED",
+        "terminal": true,
+        "quote": "| `REJECTED` | Failed a gate, or refused by a reviewer. `failing_gate` and `rejection_reason` are populated. | **yes** |"
+      },
+      {
+        "name": "CANCELLED",
+        "terminal": true,
+        "quote": "| `CANCELLED` | Withdrawn by the operator. | **yes** |"
+      },
+      {
+        "name": "COMPLETED",
+        "terminal": true,
+        "quote": "| `COMPLETED` | Flight concluded. Set **only** by the maintenance completion endpoint — never inferred from elapsed time. | **yes** |"
+      }
+    ],
+    "actions": [
+      {
+        "name": "submit",
+        "actor": "operator (not stated explicitly)",
+        "quote": "| `DRAFT` | submit | `SUBMITTED` → immediately `UNDER_REVIEW` or `REJECTED` |"
+      },
+      {
+        "name": "approve",
+        "actor": "reviewer",
+        "quote": "Reviewer-only (`X-Reviewer-Id`); writes a `ReviewAction` row"
+      },
+      {
+        "name": "reject",
+        "actor": "reviewer",
+        "quote": "Reviewer-only; `note` required"
+      },
+      {
+        "name": "complete",
+        "actor": "maintenance endpoint",
+        "quote": "Maintenance endpoint only — never inferred from elapsed time"
+      },
+      {
+        "name": "cancel",
+        "actor": "operator",
+        "quote": "Operator-initiated"
+      }
+    ],
+    "invalid_rule": {
+      "expected": "409",
+      "quote": "**Any transition not shown below is invalid and must return `409`**"
+    }
+  },
+  "equivalence_partitions": [
+    {
+      "id": "EP-01",
+      "variable": "source state for any action",
+      "partitions": [
+        {
+          "class": "legal (from, action) pair (8 pairs from the table)",
+          "valid": true,
+          "representative": "UNDER_REVIEW + approve",
+          "expected": "transition to target state"
+        },
+        {
+          "class": "illegal pair from non-terminal state",
+          "valid": false,
+          "representative": "UNDER_REVIEW + submit",
+          "expected": "409, state unchanged"
+        },
+        {
+          "class": "any action from terminal state (REJECTED/CANCELLED/COMPLETED)",
+          "valid": false,
+          "representative": "CANCELLED + cancel",
+          "expected": "409, state unchanged"
+        }
+      ],
+      "quote": "Every other pair — e.g. `REJECTED`→anything, `CANCELLED`→anything, `COMPLETED`→anything, or re-submitting something already `UNDER_REVIEW` — is illegal and returns `409`."
+    },
+    {
+      "id": "EP-02",
+      "variable": "gate outcome on submit",
+      "partitions": [
+        {
+          "class": "all four gates pass",
+          "valid": true,
+          "representative": "valid DRAFT, no overlap",
+          "expected": "UNDER_REVIEW"
+        },
+        {
+          "class": "at least one gate fails",
+          "valid": true,
+          "representative": "DRAFT failing one gate",
+          "expected": "REJECTED, failing_gate and rejection_reason populated"
+        }
+      ],
+      "quote": "`SUBMITTED` resolves immediately into either `UNDER_REVIEW` (all gates passed) or `REJECTED` (a gate failed)."
+    },
+    {
+      "id": "EP-03",
+      "variable": "caller identity for approve/reject",
+      "partitions": [
+        {
+          "class": "reviewer (X-Reviewer-Id present)",
+          "valid": true,
+          "representative": "valid X-Reviewer-Id",
+          "expected": "transition happens"
+        },
+        {
+          "class": "no X-Reviewer-Id",
+          "valid": false,
+          "representative": "header omitted",
+          "expected": "rejected; status code not specified (U-03)"
+        }
+      ],
+      "quote": "Reviewer-only (`X-Reviewer-Id`); writes a `ReviewAction` row"
+    },
+    {
+      "id": "EP-04",
+      "variable": "time of cancel relative to window_start for APPROVED",
+      "partitions": [
+        {
+          "class": "now <= window_start - 2h",
+          "valid": true,
+          "representative": "window_start - 24h",
+          "expected": "CANCELLED"
+        },
+        {
+          "class": "window_start - 2h < now < window_start",
+          "valid": false,
+          "representative": "window_start - 1h",
+          "expected": "409, stays APPROVED"
+        },
+        {
+          "class": "now >= window_start (window already started/passed)",
+          "valid": false,
+          "representative": "window_start + 1h",
+          "expected": "409 (implied by 'only up to 2 hours before'), stays APPROVED"
+        }
+      ],
+      "quote": "Cancelling an `APPROVED` request is only allowed **up to 2 hours before `window_start`**. Closer than that, the cancel endpoint should reject it (`409` — this is a state-transition question, not a gate failure)."
+    },
+    {
+      "id": "EP-05",
+      "variable": "time-based cancel restriction for non-APPROVED states",
+      "partitions": [
+        {
+          "class": "DRAFT / UNDER_REVIEW cancel less than 2h before window_start",
+          "valid": true,
+          "representative": "UNDER_REVIEW, window_start - 1h",
+          "expected": "CANCELLED (deadline is stated only for APPROVED) — confirm, see U-06"
+        }
+      ],
+      "quote": "Cancelling an `APPROVED` request is only allowed **up to 2 hours before `window_start`**."
+    },
+    {
+      "id": "EP-06",
+      "variable": "note on reject",
+      "partitions": [
+        {
+          "class": "note present (non-empty)",
+          "valid": true,
+          "representative": "\"Insufficient documents\"",
+          "expected": "REJECTED"
+        },
+        {
+          "class": "note missing",
+          "valid": false,
+          "representative": "field omitted",
+          "expected": "rejected; status code not specified (U-04)"
+        },
+        {
+          "class": "note empty / whitespace",
+          "valid": "unknown",
+          "representative": "\"\"",
+          "expected": "not specified (U-04)"
+        }
+      ],
+      "quote": "Reviewer-only; `note` required"
+    },
+    {
+      "id": "EP-07",
+      "variable": "state of another request for the same aircraft (overlap check)",
+      "partitions": [
+        {
+          "class": "counted: APPROVED, UNDER_REVIEW",
+          "valid": true,
+          "representative": "other request APPROVED with overlapping window",
+          "expected": "submit -> REJECTED (AIRCRAFT/TIME_WINDOW gate)"
+        },
+        {
+          "class": "invisible: DRAFT, REJECTED, CANCELLED, COMPLETED",
+          "valid": true,
+          "representative": "other request CANCELLED with overlapping window",
+          "expected": "no overlap failure"
+        }
+      ],
+      "quote": "Only `APPROVED` and `UNDER_REVIEW` requests are counted by the overlap check inside the `AIRCRAFT` / `TIME_WINDOW` gates. `DRAFT`, `REJECTED`, `CANCELLED` and `COMPLETED` are invisible to it"
+    },
+    {
+      "id": "EP-08",
+      "variable": "how COMPLETED is reached",
+      "partitions": [
+        {
+          "class": "maintenance complete endpoint on APPROVED",
+          "valid": true,
+          "representative": "call complete",
+          "expected": "COMPLETED"
+        },
+        {
+          "class": "elapsed time (window_end passed, no call)",
+          "valid": false,
+          "representative": "APPROVED with window in the past",
+          "expected": "stays APPROVED"
+        }
+      ],
+      "quote": "Set **only** by the maintenance completion endpoint — never inferred from elapsed time."
+    }
+  ],
+  "boundary_values": [
+    {
+      "id": "BV-01",
+      "boundary": "cancel deadline for APPROVED = window_start - 2h",
+      "values": [
+        {
+          "value": "window_start - 2h - 1 min",
+          "expected": "CANCELLED"
+        },
+        {
+          "value": "window_start - 2h exactly",
+          "expected": "CANCELLED if 'up to' is inclusive (assumed, see U-05)"
+        },
+        {
+          "value": "window_start - 2h + 1 min",
+          "expected": "409, stays APPROVED"
+        }
+      ],
+      "quote": "Cancelling an `APPROVED` request is only allowed **up to 2 hours before `window_start`**.",
+      "notes": "Time granularity (seconds/minutes) and clock source not specified (U-05)."
+    },
+    {
+      "id": "BV-02",
+      "boundary": "window_start itself for APPROVED cancel",
+      "values": [
+        {
+          "value": "window_start - 1 min",
+          "expected": "409"
+        },
+        {
+          "value": "window_start exactly",
+          "expected": "409"
+        },
+        {
+          "value": "window_start + 1 min",
+          "expected": "409"
+        }
+      ],
+      "quote": "Closer than that, the cancel endpoint should reject it (`409` — this is a state-transition question, not a gate failure).",
+      "notes": "All three are on the invalid side; confirms no other rule applies after start."
+    },
+    {
+      "id": "BV-03",
+      "boundary": "overlap between this request and an APPROVED/UNDER_REVIEW request for the same aircraft",
+      "values": [
+        {
+          "value": "windows touch end-to-start (other.window_end == this.window_start)",
+          "expected": "not specified (U-07)"
+        },
+        {
+          "value": "overlap by 1 min",
+          "expected": "REJECTED at submit"
+        },
+        {
+          "value": "gap of 1 min",
+          "expected": "UNDER_REVIEW"
+        }
+      ],
+      "quote": "which is why a request that passed `validate` can still fail at `submit`, if another request for the same aircraft was approved in the interim.",
+      "notes": "Overlap rule definition is not in this file."
+    }
+  ],
+  "state_transition_table": [
+    {
+      "id": "ST-01",
+      "from": "DRAFT",
+      "action": "submit",
+      "valid": true,
+      "expected_to": "UNDER_REVIEW | REJECTED (via transient SUBMITTED)",
+      "expected_response": "success (status code not specified in source, see U-02)",
+      "quote": "| `DRAFT` | submit | `SUBMITTED` → immediately `UNDER_REVIEW` or `REJECTED` | Gates run synchronously; caller never observes `SUBMITTED` at rest |",
+      "notes": "Two sub-cases: all gates pass -> UNDER_REVIEW; any gate fails -> REJECTED with failing_gate/rejection_reason populated. Caller must never see SUBMITTED in the response or on re-read.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-02",
+      "from": "DRAFT",
+      "action": "approve",
+      "valid": false,
+      "expected_to": "DRAFT (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`**",
+      "notes": "Pair not listed in the transition table. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-03",
+      "from": "DRAFT",
+      "action": "reject",
+      "valid": false,
+      "expected_to": "DRAFT (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`**",
+      "notes": "Pair not listed in the transition table. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-04",
+      "from": "DRAFT",
+      "action": "complete",
+      "valid": false,
+      "expected_to": "DRAFT (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`**",
+      "notes": "Pair not listed in the transition table. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-05",
+      "from": "DRAFT",
+      "action": "cancel",
+      "valid": true,
+      "expected_to": "CANCELLED",
+      "expected_response": "success (status code not specified in source, see U-02)",
+      "quote": "| `DRAFT` | cancel | `CANCELLED` | Operator-initiated |",
+      "notes": "",
+      "priority": "high"
+    },
+    {
+      "id": "ST-06",
+      "from": "SUBMITTED",
+      "action": "submit",
+      "valid": false,
+      "expected_to": "SUBMITTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `SUBMITTED` resolves immediately into either `UNDER_REVIEW` (all gates passed) or `REJECTED` (a gate failed)",
+      "notes": "Not testable from outside: SUBMITTED is never observable (see U-01). Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-07",
+      "from": "SUBMITTED",
+      "action": "approve",
+      "valid": false,
+      "expected_to": "SUBMITTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `SUBMITTED` resolves immediately into either `UNDER_REVIEW` (all gates passed) or `REJECTED` (a gate failed)",
+      "notes": "Not testable from outside: SUBMITTED is never observable (see U-01). Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-08",
+      "from": "SUBMITTED",
+      "action": "reject",
+      "valid": false,
+      "expected_to": "SUBMITTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `SUBMITTED` resolves immediately into either `UNDER_REVIEW` (all gates passed) or `REJECTED` (a gate failed)",
+      "notes": "Not testable from outside: SUBMITTED is never observable (see U-01). Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-09",
+      "from": "SUBMITTED",
+      "action": "complete",
+      "valid": false,
+      "expected_to": "SUBMITTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `SUBMITTED` resolves immediately into either `UNDER_REVIEW` (all gates passed) or `REJECTED` (a gate failed)",
+      "notes": "Not testable from outside: SUBMITTED is never observable (see U-01). Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-10",
+      "from": "SUBMITTED",
+      "action": "cancel",
+      "valid": true,
+      "expected_to": "CANCELLED",
+      "expected_response": "success (status code not specified in source, see U-02)",
+      "quote": "| `SUBMITTED` | cancel | `CANCELLED` | Operator-initiated — only reachable in the narrow window before gates resolve it automatically |",
+      "notes": "Practically not reachable by black-box testing: SUBMITTED is never observable at rest (see U-01).",
+      "priority": "high"
+    },
+    {
+      "id": "ST-11",
+      "from": "UNDER_REVIEW",
+      "action": "submit",
+      "valid": false,
+      "expected_to": "UNDER_REVIEW (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... re-submitting something already `UNDER_REVIEW`",
+      "notes": "Explicitly named in the spec as illegal. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-12",
+      "from": "UNDER_REVIEW",
+      "action": "approve",
+      "valid": true,
+      "expected_to": "APPROVED",
+      "expected_response": "success (status code not specified in source, see U-02)",
+      "quote": "| `UNDER_REVIEW` | approve | `APPROVED` | Reviewer-only (`X-Reviewer-Id`); writes a `ReviewAction` row |",
+      "notes": "Check ReviewAction row is written. Negative: without X-Reviewer-Id (error code not specified, see U-03).",
+      "priority": "high"
+    },
+    {
+      "id": "ST-13",
+      "from": "UNDER_REVIEW",
+      "action": "reject",
+      "valid": true,
+      "expected_to": "REJECTED",
+      "expected_response": "success (status code not specified in source, see U-02)",
+      "quote": "| `UNDER_REVIEW` | reject | `REJECTED` | Reviewer-only; `note` required |",
+      "notes": "Negative: without X-Reviewer-Id; without note (error code not specified, see U-03, U-04).",
+      "priority": "high"
+    },
+    {
+      "id": "ST-14",
+      "from": "UNDER_REVIEW",
+      "action": "complete",
+      "valid": false,
+      "expected_to": "UNDER_REVIEW (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`**",
+      "notes": "Pair not listed in the transition table. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-15",
+      "from": "UNDER_REVIEW",
+      "action": "cancel",
+      "valid": true,
+      "expected_to": "CANCELLED",
+      "expected_response": "success (status code not specified in source, see U-02)",
+      "quote": "| `UNDER_REVIEW` | cancel | `CANCELLED` | Operator-initiated |",
+      "notes": "",
+      "priority": "high"
+    },
+    {
+      "id": "ST-16",
+      "from": "APPROVED",
+      "action": "submit",
+      "valid": false,
+      "expected_to": "APPROVED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`**",
+      "notes": "Pair not listed in the transition table. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-17",
+      "from": "APPROVED",
+      "action": "approve",
+      "valid": false,
+      "expected_to": "APPROVED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`**",
+      "notes": "Pair not listed in the transition table. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-18",
+      "from": "APPROVED",
+      "action": "reject",
+      "valid": false,
+      "expected_to": "APPROVED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`**",
+      "notes": "Pair not listed in the transition table. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "medium"
+    },
+    {
+      "id": "ST-19",
+      "from": "APPROVED",
+      "action": "complete",
+      "valid": true,
+      "expected_to": "COMPLETED",
+      "expected_response": "success (status code not specified in source, see U-02)",
+      "quote": "| `APPROVED` | complete | `COMPLETED` | Maintenance endpoint only — never inferred from elapsed time |",
+      "notes": "Also check: APPROVED request with window already past stays APPROVED until complete is called.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-20",
+      "from": "APPROVED",
+      "action": "cancel",
+      "valid": true,
+      "expected_to": "CANCELLED if now <= window_start - 2h; otherwise 409, state stays APPROVED",
+      "expected_response": "success before deadline / 409 after deadline",
+      "quote": "| `APPROVED` | cancel | `CANCELLED` | Operator-initiated, **only** up to 2 hours before `window_start` — see cancellation deadline below |",
+      "notes": "Conditional transition: covered by BV-01 and EP-04.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-21",
+      "from": "REJECTED",
+      "action": "submit",
+      "valid": false,
+      "expected_to": "REJECTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `REJECTED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-22",
+      "from": "REJECTED",
+      "action": "approve",
+      "valid": false,
+      "expected_to": "REJECTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `REJECTED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-23",
+      "from": "REJECTED",
+      "action": "reject",
+      "valid": false,
+      "expected_to": "REJECTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `REJECTED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-24",
+      "from": "REJECTED",
+      "action": "complete",
+      "valid": false,
+      "expected_to": "REJECTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `REJECTED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-25",
+      "from": "REJECTED",
+      "action": "cancel",
+      "valid": false,
+      "expected_to": "REJECTED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `REJECTED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-26",
+      "from": "CANCELLED",
+      "action": "submit",
+      "valid": false,
+      "expected_to": "CANCELLED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `CANCELLED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-27",
+      "from": "CANCELLED",
+      "action": "approve",
+      "valid": false,
+      "expected_to": "CANCELLED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `CANCELLED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-28",
+      "from": "CANCELLED",
+      "action": "reject",
+      "valid": false,
+      "expected_to": "CANCELLED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `CANCELLED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-29",
+      "from": "CANCELLED",
+      "action": "complete",
+      "valid": false,
+      "expected_to": "CANCELLED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `CANCELLED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-30",
+      "from": "CANCELLED",
+      "action": "cancel",
+      "valid": false,
+      "expected_to": "CANCELLED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `CANCELLED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-31",
+      "from": "COMPLETED",
+      "action": "submit",
+      "valid": false,
+      "expected_to": "COMPLETED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `COMPLETED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-32",
+      "from": "COMPLETED",
+      "action": "approve",
+      "valid": false,
+      "expected_to": "COMPLETED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `COMPLETED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-33",
+      "from": "COMPLETED",
+      "action": "reject",
+      "valid": false,
+      "expected_to": "COMPLETED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `COMPLETED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-34",
+      "from": "COMPLETED",
+      "action": "complete",
+      "valid": false,
+      "expected_to": "COMPLETED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `COMPLETED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-35",
+      "from": "COMPLETED",
+      "action": "cancel",
+      "valid": false,
+      "expected_to": "COMPLETED (unchanged)",
+      "expected_response": "409",
+      "quote": "**Any `(from, action)` pair not listed here is illegal and must return `409`** ... `COMPLETED`→anything",
+      "notes": "Terminal state. Verify state is unchanged and no audit/ReviewAction row is written.",
+      "priority": "high"
+    },
+    {
+      "id": "ST-36",
+      "from": "SUBMITTED",
+      "action": "(gates pass, automatic)",
+      "valid": true,
+      "expected_to": "UNDER_REVIEW",
+      "expected_response": "part of the submit response",
+      "quote": "| `SUBMITTED` | (gates pass, automatic) | `UNDER_REVIEW` | Not a caller-invoked action — part of the submit call's own outcome |",
+      "notes": "Tested via ST-01 (submit with all four gates passing).",
+      "priority": "high"
+    },
+    {
+      "id": "ST-37",
+      "from": "SUBMITTED",
+      "action": "(gates fail, automatic)",
+      "valid": true,
+      "expected_to": "REJECTED",
+      "expected_response": "part of the submit response; failing_gate and rejection_reason populated",
+      "quote": "| `SUBMITTED` | (gates fail, automatic) | `REJECTED` | Same — `failing_gate`/`rejection_reason` populated |",
+      "notes": "Tested via ST-01 with one failing gate; ideally once per gate (gate list not in this spec, see U-08).",
+      "priority": "high"
+    }
+  ],
+  "transition_sequences": [
+    {
+      "id": "SEQ-01",
+      "path": [
+        "DRAFT",
+        "submit(gates pass)",
+        "UNDER_REVIEW",
+        "approve",
+        "APPROVED",
+        "complete",
+        "COMPLETED"
+      ],
+      "purpose": "happy path to terminal COMPLETED"
+    },
+    {
+      "id": "SEQ-02",
+      "path": [
+        "DRAFT",
+        "submit(gate fails)",
+        "REJECTED"
+      ],
+      "purpose": "auto-reject"
+    },
+    {
+      "id": "SEQ-03",
+      "path": [
+        "DRAFT",
+        "submit",
+        "UNDER_REVIEW",
+        "reject",
+        "REJECTED"
+      ],
+      "purpose": "reviewer reject"
+    },
+    {
+      "id": "SEQ-04",
+      "path": [
+        "DRAFT",
+        "cancel",
+        "CANCELLED"
+      ],
+      "purpose": "cancel from DRAFT"
+    },
+    {
+      "id": "SEQ-05",
+      "path": [
+        "DRAFT",
+        "submit",
+        "UNDER_REVIEW",
+        "cancel",
+        "CANCELLED"
+      ],
+      "purpose": "cancel under review"
+    },
+    {
+      "id": "SEQ-06",
+      "path": [
+        "DRAFT",
+        "submit",
+        "UNDER_REVIEW",
+        "approve",
+        "APPROVED",
+        "cancel(>2h before window_start)",
+        "CANCELLED"
+      ],
+      "purpose": "cancel approved before deadline"
+    },
+    {
+      "id": "SEQ-07",
+      "path": [
+        "... APPROVED",
+        "submit",
+        "409",
+        "approve",
+        "409",
+        "reject",
+        "409"
+      ],
+      "purpose": "0-switch invalid from APPROVED"
+    },
+    {
+      "id": "SEQ-08",
+      "path": [
+        "validate OK",
+        "another request for same aircraft APPROVED",
+        "submit",
+        "REJECTED"
+      ],
+      "purpose": "interim overlap; expected behaviour, not a bug"
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "U-01",
+      "topic": "SUBMITTED + cancel",
+      "detail": "Table allows cancel from SUBMITTED, but SUBMITTED is never observable at rest and gates run synchronously. Unclear how a caller could hit this window; black-box test is not feasible.",
+      "quote": "Operator-initiated — only reachable in the narrow window before gates resolve it automatically"
+    },
+    {
+      "id": "U-02",
+      "topic": "success status codes",
+      "detail": "Only 409 for invalid transitions is specified; the success code and response body for each action are not.",
+      "quote": "Any transition not shown below is invalid and must return `409`"
+    },
+    {
+      "id": "U-03",
+      "topic": "missing X-Reviewer-Id",
+      "detail": "Error code/behaviour for approve/reject without reviewer header not specified; also precedence vs 409 when both header missing and state illegal.",
+      "quote": "Reviewer-only (`X-Reviewer-Id`)"
+    },
+    {
+      "id": "U-04",
+      "topic": "reject without note",
+      "detail": "Error code not specified (409? 422?); whether empty/whitespace note counts as missing; max length.",
+      "quote": "Reviewer-only; `note` required"
+    },
+    {
+      "id": "U-05",
+      "topic": "deadline inclusivity and granularity",
+      "detail": "'up to 2 hours before' — is exactly 2h allowed? Time unit precision and time zone/clock source not specified.",
+      "quote": "only allowed **up to 2 hours before `window_start`**"
+    },
+    {
+      "id": "U-06",
+      "topic": "deadline for other states",
+      "detail": "Deadline is stated only for APPROVED; not explicit whether DRAFT/UNDER_REVIEW can be cancelled after window_start.",
+      "quote": "Cancelling an `APPROVED` request is only allowed **up to 2 hours before `window_start`**."
+    },
+    {
+      "id": "U-07",
+      "topic": "overlap definition",
+      "detail": "Whether touching windows overlap and the exact overlap formula live elsewhere (AIRCRAFT/TIME_WINDOW gates).",
+      "quote": "Only `APPROVED` and `UNDER_REVIEW` requests are counted by the overlap check inside the `AIRCRAFT` / `TIME_WINDOW` gates."
+    },
+    {
+      "id": "U-08",
+      "topic": "list of gates",
+      "detail": "'all four gates' mentioned but only AIRCRAFT and TIME_WINDOW are named; the other two and their order are not in this file.",
+      "quote": "The submit call runs all four gates and leaves this state immediately"
+    },
+    {
+      "id": "U-09",
+      "topic": "diagram vs text on cancel",
+      "detail": "Prose lists only DRAFT, SUBMITTED, UNDER_REVIEW as reaching CANCELLED, while the table (and diagram right edge) also allows APPROVED. Table treated as authoritative.",
+      "quote": "Reading the diagram: `DRAFT` and `SUBMITTED` and `UNDER_REVIEW` can all reach `CANCELLED` via the cancel action"
+    },
+    {
+      "id": "U-10",
+      "topic": "actor checks for cancel/submit/complete",
+      "detail": "Who may call submit and cancel (which operator), and how the maintenance endpoint is authorised, is not specified; behaviour when a reviewer calls cancel is unknown.",
+      "quote": "Operator-initiated"
+    },
+    {
+      "id": "U-11",
+      "topic": "audit on failed transitions",
+      "detail": "State changes are logged by trigger; not stated whether a 409 attempt is logged or must leave no trace.",
+      "quote": "The provided migration also logs every state change via a database trigger as a second line of defense"
+    },
+    {
+      "id": "U-12",
+      "topic": "validate action",
+      "detail": "`validate` is mentioned but is not in the transition table; whether it is allowed in every state and does not change state is not specified.",
+      "quote": "which is why a request that passed `validate` can still fail at `submit`"
+    }
+  ]
+}

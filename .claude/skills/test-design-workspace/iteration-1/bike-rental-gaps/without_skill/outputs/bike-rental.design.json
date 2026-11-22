@@ -1,0 +1,105 @@
+{
+  "source": "bike-rental.md",
+  "title": "CityBike — Rental Rules",
+  "equivalence_partitions": [
+    {
+      "id": "EP-AGE",
+      "parameter": "rider age (years)",
+      "quote": "A rider must be at least 16 years old to start a rental.",
+      "valid": [{"id": "EP-AGE-V1", "class": "age >= 16", "example": 30}],
+      "invalid": [{"id": "EP-AGE-I1", "class": "age < 16", "example": 12}]
+    },
+    {
+      "id": "EP-PIN",
+      "parameter": "account PIN length (digits)",
+      "quote": "The account PIN has 4 to 6 digits.",
+      "valid": [{"id": "EP-PIN-V1", "class": "4..6 digits", "example": "12345"}],
+      "invalid": [
+        {"id": "EP-PIN-I1", "class": "fewer than 4 digits", "example": "12"},
+        {"id": "EP-PIN-I2", "class": "more than 6 digits", "example": "12345678"},
+        {"id": "EP-PIN-I3", "class": "contains non-digit characters (implied by 'digits')", "example": "12a4"}
+      ]
+    },
+    {
+      "id": "EP-DUR",
+      "parameter": "rental duration (minutes)",
+      "quote": "A single rental lasts between 30 and 480 minutes.",
+      "valid": [{"id": "EP-DUR-V1", "class": "30..480", "example": 120}],
+      "invalid": [
+        {"id": "EP-DUR-I1", "class": "< 30", "example": 10},
+        {"id": "EP-DUR-I2", "class": "> 480", "example": 600}
+      ]
+    },
+    {
+      "id": "EP-ACT",
+      "parameter": "number of active rentals held by the rider",
+      "quote": "A rider may hold at most 2 active rentals at the same time.",
+      "valid": [{"id": "EP-ACT-V1", "class": "0..2 active rentals", "example": 1}],
+      "invalid": [{"id": "EP-ACT-I1", "class": "> 2 active rentals (attempt to get a 3rd)", "example": 3}]
+    },
+    {
+      "id": "EP-RES",
+      "parameter": "time from reservation to unlock (minutes)",
+      "quote": "A reservation expires if the bike is not unlocked within 15 minutes.",
+      "valid": [{"id": "EP-RES-V1", "class": "unlock within 15 min → ACTIVE", "example": 5}],
+      "invalid": [{"id": "EP-RES-I1", "class": "no unlock within 15 min → EXPIRED", "example": 20}]
+    }
+  ],
+  "boundary_values": [
+    {"id": "BV-AGE-16", "parameter": "rider age (years)", "boundary": 16, "quote": "at least 16 years old",
+     "values": [{"value": 15, "expected": "rental refused"}, {"value": 16, "expected": "rental allowed"}, {"value": 17, "expected": "rental allowed"}]},
+    {"id": "BV-PIN-4", "parameter": "PIN length", "boundary": 4, "quote": "4 to 6 digits",
+     "values": [{"value": 3, "expected": "rejected"}, {"value": 4, "expected": "accepted"}, {"value": 5, "expected": "accepted"}]},
+    {"id": "BV-PIN-6", "parameter": "PIN length", "boundary": 6, "quote": "4 to 6 digits",
+     "values": [{"value": 5, "expected": "accepted"}, {"value": 6, "expected": "accepted"}, {"value": 7, "expected": "rejected"}]},
+    {"id": "BV-DUR-30", "parameter": "rental duration (minutes)", "boundary": 30, "quote": "between 30 and 480 minutes",
+     "values": [{"value": 29, "expected": "invalid (consequence not specified)"}, {"value": 30, "expected": "valid"}, {"value": 31, "expected": "valid"}],
+     "note": "'between' assumed inclusive — not stated; see U-03"},
+    {"id": "BV-DUR-480", "parameter": "rental duration (minutes)", "boundary": 480, "quote": "between 30 and 480 minutes",
+     "values": [{"value": 479, "expected": "valid"}, {"value": 480, "expected": "valid"}, {"value": 481, "expected": "invalid (consequence not specified)"}],
+     "note": "'between' assumed inclusive — not stated; see U-03"},
+    {"id": "BV-ACT-2", "parameter": "active rentals held", "boundary": 2, "quote": "at most 2 active rentals at the same time",
+     "values": [{"value": 1, "expected": "new rental allowed (becomes 2)"}, {"value": 2, "expected": "holding 2 is allowed; a 3rd is refused"}, {"value": 3, "expected": "not reachable — attempt refused"}]},
+    {"id": "BV-RES-15", "parameter": "minutes from reservation to unlock", "boundary": 15, "quote": "not unlocked within 15 minutes",
+     "values": [{"value": 14, "expected": "unlock succeeds → ACTIVE"}, {"value": 15, "expected": "unlock succeeds → ACTIVE (assumed 'within' is inclusive; see U-06)"}, {"value": 16, "expected": "reservation EXPIRED, unlock not possible"}]}
+  ],
+  "state_transitions": {
+    "states": ["RESERVED", "ACTIVE", "RETURNED", "EXPIRED"],
+    "initial_state": "RESERVED (inferred — not stated explicitly)",
+    "final_states": ["RETURNED", "EXPIRED"],
+    "actions": ["unlock", "timeout", "return"],
+    "quote_states": "A rental is always in one of four states: RESERVED, ACTIVE, RETURNED, EXPIRED.",
+    "quote_final": "RETURNED and EXPIRED are final.",
+    "table": [
+      {"id": "ST-01", "from": "RESERVED", "action": "unlock",  "to": "ACTIVE",   "type": "valid", "quote": "| RESERVED | unlock | ACTIVE |"},
+      {"id": "ST-02", "from": "RESERVED", "action": "timeout", "to": "EXPIRED",  "type": "valid", "quote": "| RESERVED | timeout | EXPIRED |"},
+      {"id": "ST-03", "from": "RESERVED", "action": "return",  "to": null,       "type": "undefined", "unknown": "U-07"},
+      {"id": "ST-04", "from": "ACTIVE",   "action": "unlock",  "to": null,       "type": "undefined", "unknown": "U-07"},
+      {"id": "ST-05", "from": "ACTIVE",   "action": "timeout", "to": null,       "type": "undefined", "unknown": "U-08"},
+      {"id": "ST-06", "from": "ACTIVE",   "action": "return",  "to": "RETURNED", "type": "valid", "quote": "| ACTIVE | return | RETURNED |"},
+      {"id": "ST-07", "from": "RETURNED", "action": "unlock",  "to": "RETURNED", "type": "invalid (final state)", "quote": "RETURNED and EXPIRED are final."},
+      {"id": "ST-08", "from": "RETURNED", "action": "timeout", "to": "RETURNED", "type": "invalid (final state)", "quote": "RETURNED and EXPIRED are final."},
+      {"id": "ST-09", "from": "RETURNED", "action": "return",  "to": "RETURNED", "type": "invalid (final state)", "quote": "RETURNED and EXPIRED are final."},
+      {"id": "ST-10", "from": "EXPIRED",  "action": "unlock",  "to": "EXPIRED",  "type": "invalid (final state)", "quote": "RETURNED and EXPIRED are final."},
+      {"id": "ST-11", "from": "EXPIRED",  "action": "timeout", "to": "EXPIRED",  "type": "invalid (final state)", "quote": "RETURNED and EXPIRED are final."},
+      {"id": "ST-12", "from": "EXPIRED",  "action": "return",  "to": "EXPIRED",  "type": "invalid (final state)", "quote": "RETURNED and EXPIRED are final."}
+    ],
+    "paths": [
+      {"id": "ST-P1", "sequence": "RESERVED -unlock-> ACTIVE -return-> RETURNED"},
+      {"id": "ST-P2", "sequence": "RESERVED -timeout-> EXPIRED"}
+    ],
+    "note": "Error behaviour for invalid/undefined transitions (message, code) is not specified."
+  },
+  "unknowns": [
+    {"id": "U-01", "topic": "Age", "question": "How is age measured (date of birth vs. declared age; birthday on rental day)? What happens to an under-16 attempt — error text/code?"},
+    {"id": "U-02", "topic": "PIN", "question": "Are leading zeros, all-identical or sequential PINs allowed? Is the PIN checked at rental start? Non-digit handling not stated."},
+    {"id": "U-03", "topic": "Duration", "question": "Is 'between 30 and 480' inclusive? Is it enforced at booking or at return? What happens if a rider returns before 30 min (refused, charged min 30?) or exceeds 480 min (auto-end, penalty, state change)?"},
+    {"id": "U-04", "topic": "Active rental limit", "question": "Do RESERVED rentals count toward the limit of 2 'active' rentals, or only state ACTIVE? Is the 3rd attempt blocked at reserve or at unlock?"},
+    {"id": "U-05", "topic": "Rider vs. rental age rule", "question": "Is the age check performed at reservation or at unlock ('to start a rental')?"},
+    {"id": "U-06", "topic": "Reservation timeout", "question": "Is exactly 15:00 still within the window? Granularity (seconds vs minutes) not stated."},
+    {"id": "U-07", "topic": "Undefined transitions", "question": "RESERVED + return and ACTIVE + unlock are not in the table and the states are not final — rejected, ignored, or something else?"},
+    {"id": "U-08", "topic": "ACTIVE timeout", "question": "Is there a timeout for ACTIVE rentals (e.g. at 480 min)? Table has no ACTIVE + timeout row."},
+    {"id": "U-09", "topic": "Cancellation", "question": "No cancel action for a reservation is described — is it possible?"},
+    {"id": "U-10", "topic": "Initial state", "question": "Document does not explicitly say that every rental starts in RESERVED, or whether a rental can start directly as ACTIVE."}
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "expectations": [
+    {
+      "text": "06-business-rules.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+      "passed": true,
+      "evidence": "file and all keys present"
+    },
+    {
+      "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+      "passed": true,
+      "evidence": "12/12 verbatim; bad: []"
+    },
+    {
+      "text": "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+      "passed": true,
+      "evidence": "3 BV; bad: []"
+    },
+    {
+      "text": "There is a boundary at 15 minutes with values 14/15/16 minutes expected invalid/valid/valid, inclusive true, step 1 minute",
+      "passed": true,
+      "evidence": "BV-01: [(14.0, 'invalid'), (15.0, 'valid'), (16.0, 'valid')], inclusive=True, step=1 хв"
+    },
+    {
+      "text": "There is a boundary at 240 minutes with values 239/240/241 minutes expected valid/valid/invalid, inclusive true, step 1 minute",
+      "passed": true,
+      "evidence": "BV-02: [(239.0, 'valid'), (240.0, 'valid'), (241.0, 'invalid')], inclusive=True, step=1 хв"
+    },
+    {
+      "text": "Equivalence classes include below 15 minutes (invalid), 15–240 minutes (valid) and above 240 minutes (invalid), each quoting spec line 97",
+      "passed": true,
+      "evidence": "valid15-240=True, below=True, above=True, all quote 97=True"
+    },
+    {
+      "text": "state_transitions is {not_applicable: ...} because the focus is a duration rule, not a state machine",
+      "passed": true,
+      "evidence": "state_transitions keys: ['not_applicable']"
+    },
+    {
+      "text": "Every EP and BV id appears in the covers list of at least one test, and every id in covers/affects exists",
+      "passed": true,
+      "evidence": "uncovered: []; dangling refs: []"
+    },
+    {
+      "text": "No equivalence class is defined for empty, null or wrong-type values; if such cases are raised, they appear only as a question in unknowns",
+      "passed": true,
+      "evidence": "none"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  }
+}

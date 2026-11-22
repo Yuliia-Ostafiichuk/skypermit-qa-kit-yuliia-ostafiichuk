@@ -1,0 +1,55 @@
+{
+  "expectations": [
+    {
+      "text": "06-business-rules.design.json exists next to the spec, is valid JSON and has the top-level keys spec, focus, equivalence_classes, boundary_values, state_transitions, tests, unknowns",
+      "passed": false,
+      "evidence": "expected file missing; found 06-business-rules.flight-duration.design.json"
+    },
+    {
+      "text": "Every quote.text in the design (classes, boundaries, transitions, responses) is a verbatim substring of the spec line given by quote.line",
+      "passed": false,
+      "evidence": "no quote objects found"
+    },
+    {
+      "text": "Every boundary value entry has exactly three values and every expected is one of valid, invalid, unknown",
+      "passed": false,
+      "evidence": "9 BV; bad: ['BV-1', 'BV-2', 'BV-3', 'BV-4', 'BV-5', 'BV-6', 'BV-7', 'BV-8', 'BV-9']"
+    },
+    {
+      "text": "There is a boundary at 15 minutes with values 14/15/16 minutes expected invalid/valid/valid, inclusive true, step 1 minute",
+      "passed": false,
+      "evidence": "BV-4: [], inclusive=None, step=None"
+    },
+    {
+      "text": "There is a boundary at 240 minutes with values 239/240/241 minutes expected valid/valid/invalid, inclusive true, step 1 minute",
+      "passed": false,
+      "evidence": "BV-7: [], inclusive=None, step=None"
+    },
+    {
+      "text": "Equivalence classes include below 15 minutes (invalid), 15–240 minutes (valid) and above 240 minutes (invalid), each quoting spec line 97",
+      "passed": false,
+      "evidence": "check error: AttributeError(\"'str' object has no attribute 'get'\")"
+    },
+    {
+      "text": "state_transitions is {not_applicable: ...} because the focus is a duration rule, not a state machine",
+      "passed": false,
+      "evidence": "state_transitions keys: ['applicable', 'reason', 'related_ordering_checks']"
+    },
+    {
+      "text": "Every EP and BV id appears in the covers list of at least one test, and every id in covers/affects exists",
+      "passed": false,
+      "evidence": "uncovered: ['BV-1', 'BV-2', 'BV-3', 'BV-4', 'BV-5', 'BV-6', 'BV-7', 'BV-8']; dangling refs: []"
+    },
+    {
+      "text": "No equivalence class is defined for empty, null or wrong-type values; if such cases are raised, they appear only as a question in unknowns",
+      "passed": true,
+      "evidence": "none"
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 8,
+    "total": 9,
+    "pass_rate": 0.11
+  }
+}
